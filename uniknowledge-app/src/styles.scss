@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Angular Material Theme */
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+
 * {
   margin: 0;
   padding: 0;

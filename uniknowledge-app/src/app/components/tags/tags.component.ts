@@ -27,8 +27,7 @@ export class TagsComponent implements OnInit {
         this.tags.set(tags);
         this.isLoading.set(false);
       },
-      error: (error) => {
-        console.error('Error loading tags:', error);
+      error: () => {
         this.isLoading.set(false);
       }
     });

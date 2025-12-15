@@ -2,9 +2,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { QuestionService } from '../../services/question.service';
 import { CategoryService } from '../../services/category.service';
 import { TagService } from '../../services/tag.service';
+import { UploadService } from '../../services/upload.service';
 import { Category } from '../../models/category.model';
 import { TagDetail } from '../../models/tag.model';
 
@@ -21,6 +23,7 @@ export class CreateQuestionComponent implements OnInit {
   private questionService = inject(QuestionService);
   private categoryService = inject(CategoryService);
   private tagService = inject(TagService);
+  private uploadService = inject(UploadService);
 
   questionForm: FormGroup;
   categories = signal<Category[]>([]);
@@ -30,6 +33,8 @@ export class CreateQuestionComponent implements OnInit {
   isLoading = signal<boolean>(false);
   selectedFile: File | null = null;
   selectedFileName = signal<string>('');
+  uploadedFilePath = signal<string | null>(null);
+  uploadProgress = signal<number>(0);
 
   constructor() {
     this.questionForm = this.fb.group({
@@ -50,9 +55,6 @@ export class CreateQuestionComponent implements OnInit {
     this.categoryService.getCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
       }
     });
   }
@@ -61,9 +63,6 @@ export class CreateQuestionComponent implements OnInit {
     this.tagService.getTags().subscribe({
       next: (tags) => {
         this.tags.set(tags);
-      },
-      error: (error) => {
-        console.error('Error loading tags:', error);
       }
     });
   }
@@ -104,23 +103,24 @@ export class CreateQuestionComponent implements OnInit {
   }
 
   removeFile(): void {
+    // Delete uploaded file from server if exists
+    const filePath = this.uploadedFilePath();
+    if (filePath) {
+      this.uploadService.deleteQuestionAttachment(filePath).subscribe({
+        error: (error) => {
+          // Silently fail if delete fails
+        }
+      });
+    }
+
     this.selectedFile = null;
     this.selectedFileName.set('');
+    this.uploadedFilePath.set(null);
+    this.uploadProgress.set(0);
     const fileInput = document.getElementById('attachmentFile') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
     }
-  }
-
-  convertFileToDataUrl(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   }
 
   async onSubmit(): Promise<void> {
@@ -142,10 +142,24 @@ export class CreateQuestionComponent implements OnInit {
     try {
       const formValue = this.questionForm.value;
       
-      // Convert file to data URL if file is selected
-      let attachmentUrl: string | undefined = undefined;
-      if (this.selectedFile) {
-        attachmentUrl = await this.convertFileToDataUrl(this.selectedFile);
+      // Upload file first if file is selected and not yet uploaded
+      let fileUrl: string | undefined = undefined;
+      if (this.selectedFile && !this.uploadedFilePath()) {
+        try {
+          this.uploadProgress.set(10);
+          const uploadResponse = await firstValueFrom(this.uploadService.uploadQuestionAttachment(this.selectedFile));
+          fileUrl = uploadResponse.fileUrl; // Use fileUrl from server
+          this.uploadedFilePath.set(uploadResponse.filePath);
+          this.uploadProgress.set(100);
+        } catch (uploadError: any) {
+          this.isLoading.set(false);
+          this.errorMessage.set(uploadError.error?.message || 'Failed to upload file. Please try again.');
+          return;
+        }
+      } else if (this.uploadedFilePath()) {
+        // File already uploaded, use the fileUrl
+        const filePath = this.uploadedFilePath()!;
+        fileUrl = `http://localhost:5134/${filePath}`;
       }
 
       const questionData = {
@@ -154,7 +168,7 @@ export class CreateQuestionComponent implements OnInit {
         categoryId: parseInt(formValue.categoryId),
         tagIds: this.selectedTags(),
         imageUrl: formValue.imageUrl?.trim() || undefined,
-        attachmentUrl: attachmentUrl
+        fileUrl: fileUrl // Send fileUrl to backend
       };
 
       this.questionService.createQuestion(questionData).subscribe({
@@ -170,7 +184,6 @@ export class CreateQuestionComponent implements OnInit {
     } catch (error) {
       this.isLoading.set(false);
       this.errorMessage.set('Failed to process file. Please try again.');
-      console.error('Error processing file:', error);
     }
   }
 

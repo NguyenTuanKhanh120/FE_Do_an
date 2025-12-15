@@ -43,7 +43,7 @@ export class QuestionService {
   }
 
   deleteQuestion(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { observe: 'body' });
   }
 }
 

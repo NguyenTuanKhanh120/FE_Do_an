@@ -27,8 +27,7 @@ export class CategoriesComponent implements OnInit {
         this.categories.set(categories);
         this.isLoading.set(false);
       },
-      error: (error) => {
-        console.error('Error loading categories:', error);
+      error: () => {
         this.isLoading.set(false);
       }
     });

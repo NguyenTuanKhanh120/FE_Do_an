@@ -47,8 +47,7 @@ export class HomeComponent implements OnInit {
         this.questions.set(questions);
         this.isLoading.set(false);
       },
-      error: (error) => {
-        console.error('Error loading questions:', error);
+      error: () => {
         this.isLoading.set(false);
       }
     });
@@ -59,8 +58,8 @@ export class HomeComponent implements OnInit {
       next: (categories) => {
         this.categories.set(categories);
       },
-      error: (error) => {
-        console.error('Error loading categories:', error);
+      error: () => {
+        // Error loading categories
       }
     });
   }
@@ -70,8 +69,8 @@ export class HomeComponent implements OnInit {
       next: (tags) => {
         this.popularTags.set(tags);
       },
-      error: (error) => {
-        console.error('Error loading tags:', error);
+      error: () => {
+        // Error loading tags
       }
     });
   }
