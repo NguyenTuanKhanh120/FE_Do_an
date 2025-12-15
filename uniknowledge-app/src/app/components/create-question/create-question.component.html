@@ -1,0 +1,204 @@
+<div class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-lg shadow p-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-6">Ask a Question</h1>
+
+      @if (errorMessage()) {
+        <div class="rounded-md bg-red-50 p-4 mb-6">
+          <div class="flex">
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">
+                {{ errorMessage() }}
+              </h3>
+            </div>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="questionForm" (ngSubmit)="onSubmit()">
+        <!-- Title -->
+        <div class="mb-6">
+          <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+            Question Title
+          </label>
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="e.g. How to implement authentication in Angular?"
+          />
+          @if (title?.invalid && title?.touched) {
+            <div class="text-red-600 text-sm mt-1">
+              @if (title?.errors?.['required']) {
+                Title is required
+              }
+              @if (title?.errors?.['minlength']) {
+                Title must be at least 10 characters
+              }
+              @if (title?.errors?.['maxlength']) {
+                Title must not exceed 255 characters
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Content -->
+        <div class="mb-6">
+          <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+            Question Details
+          </label>
+          <textarea
+            id="content"
+            formControlName="content"
+            rows="10"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Describe your question in detail..."
+          ></textarea>
+          @if (content?.invalid && content?.touched) {
+            <div class="text-red-600 text-sm mt-1">
+              @if (content?.errors?.['required']) {
+                Content is required
+              }
+              @if (content?.errors?.['minlength']) {
+                Content must be at least 20 characters
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Category -->
+        <div class="mb-6">
+          <label for="categoryId" class="block text-sm font-medium text-gray-700 mb-2">
+            Category
+          </label>
+          <select
+            id="categoryId"
+            formControlName="categoryId"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">Select a category</option>
+            @for (category of categories(); track category.categoryId) {
+              <option [value]="category.categoryId">
+                {{ category.categoryName }}
+              </option>
+            }
+          </select>
+          @if (categoryId?.invalid && categoryId?.touched) {
+            <div class="text-red-600 text-sm mt-1">
+              @if (categoryId?.errors?.['required']) {
+                Category is required
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Tags -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Tags (select at least one)
+          </label>
+          <div class="flex flex-wrap gap-2">
+            @for (tag of tags(); track tag.tagId) {
+              <button
+                type="button"
+                (click)="toggleTag(tag.tagId)"
+                [class.bg-primary-600]="isTagSelected(tag.tagId)"
+                [class.text-white]="isTagSelected(tag.tagId)"
+                [class.bg-gray-200]="!isTagSelected(tag.tagId)"
+                [class.text-gray-700]="!isTagSelected(tag.tagId)"
+                class="px-4 py-2 rounded-md text-sm font-medium hover:opacity-80 transition-colors"
+              >
+                {{ tag.tagName }}
+              </button>
+            }
+          </div>
+          @if (selectedTags().length === 0) {
+            <p class="text-sm text-gray-500 mt-2">Please select at least one tag</p>
+          }
+        </div>
+
+        <!-- Image URL (Optional) -->
+        <div class="mb-6">
+          <label for="imageUrl" class="block text-sm font-medium text-gray-700 mb-2">
+            Image URL (Optional)
+          </label>
+          <input
+            id="imageUrl"
+            type="url"
+            formControlName="imageUrl"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="https://example.com/image.png"
+          />
+          <p class="text-sm text-gray-500 mt-1">Enter a URL to an image that helps illustrate your question</p>
+        </div>
+
+        <!-- Attachment File (Optional) -->
+        <div class="mb-6">
+          <label for="attachmentFile" class="block text-sm font-medium text-gray-700 mb-2">
+            Attachment File (Optional)
+          </label>
+          <div class="flex items-center gap-4">
+            <label
+              for="attachmentFile"
+              class="flex-1 cursor-pointer inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Choose File
+            </label>
+            <input
+              id="attachmentFile"
+              type="file"
+              (change)="onFileSelected($event)"
+              class="hidden"
+              accept=".pdf,.doc,.docx,.txt,.zip,.rar"
+            />
+            @if (selectedFileName()) {
+              <div class="flex items-center gap-2 flex-1">
+                <span class="text-sm text-gray-700 truncate">{{ selectedFileName() }}</span>
+                <button
+                  type="button"
+                  (click)="removeFile()"
+                  class="text-red-600 hover:text-red-700"
+                  title="Remove file"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            } @else {
+              <span class="text-sm text-gray-500 flex-1">No file chosen</span>
+            }
+          </div>
+          <p class="text-sm text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, TXT, ZIP, RAR (Max 10MB)</p>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex gap-4">
+          <button
+            type="submit"
+            [disabled]="isLoading()"
+            class="flex-1 px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          >
+            @if (isLoading()) {
+              <span>Posting...</span>
+            } @else {
+              <span>Post Question</span>
+            }
+          </button>
+          <button
+            type="button"
+            (click)="router.navigate(['/'])"
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 font-medium"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
