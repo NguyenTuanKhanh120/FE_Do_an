@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 
+
+
 export const routes: Routes = [
   {
     path: '',
@@ -31,8 +33,20 @@ export const routes: Routes = [
     path: 'questions/:id',
     loadComponent: () => import('./components/question-detail/question-detail.component').then(m => m.QuestionDetailComponent)
   },
+    {
+    path: 'profile',
+    loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'profile/edit',
+    loadComponent: () => import('./components/edit-profile/edit-profile.component').then(m => m.EditProfileComponent),
+    canActivate: [authGuard]
+  },
   {
     path: '**',
     redirectTo: ''
-  }
+  },
+
+ 
 ];
