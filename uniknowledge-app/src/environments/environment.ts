@@ -1,6 +1,7 @@
 // Development environment configuration
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5134/api'
+  apiUrl: 'http://localhost:5134/api',
+  signalRUrl: 'http://localhost:5134/hubs/chat'
 };
 

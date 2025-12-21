@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserProfile, UpdateProfileRequest, ChangePasswordRequest } from '../models/user-profile.model';
 import { Question } from '../models/question.model';
@@ -39,4 +39,12 @@ export class UserProfileService {
   formData.append('file', file);
   return this.http.post<UserProfile>(`${this.apiUrl}/me/upload-avatar`, formData);
 }
+
+  searchUsers(searchTerm: string, limit: number = 20): Observable<UserProfile[]> {
+    let params = new HttpParams().set('limit', limit.toString());
+    if (searchTerm && searchTerm.trim()) {
+      params = params.set('search', searchTerm.trim());
+    }
+    return this.http.get<UserProfile[]>(`${this.apiUrl}/search`, { params });
+  }
 }

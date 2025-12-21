@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { AuthResponse, LoginRequest, RegisterRequest, User } from '../models/user.model';
+import { SignalRService } from './signalr.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ import { AuthResponse, LoginRequest, RegisterRequest, User } from '../models/use
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private signalRService = inject(SignalRService);
   private apiUrl = 'http://localhost:5134/api/auth';
 
   // Signals for reactive state management
@@ -40,7 +42,14 @@ export class AuthService {
     );
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    // Disconnect SignalR
+    try {
+      await this.signalRService.disconnect();
+    } catch (error) {
+      console.error('Error disconnecting SignalR:', error);
+    }
+    
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUser.set(null);
@@ -70,6 +79,11 @@ export class AuthService {
       localStorage.setItem('user', JSON.stringify(response.user));
       this.currentUser.set(response.user);
       this.isAuthenticated.set(true);
+      
+      // Connect to SignalR after successful login (fire and forget)
+      this.signalRService.connect(response.token).catch(error => {
+        console.error('Failed to connect to SignalR:', error);
+      });
     } catch (error) {
       // Handle storage error silently
     }
@@ -90,6 +104,11 @@ export class AuthService {
         const user = JSON.parse(userJson);
         this.currentUser.set(user);
         this.isAuthenticated.set(true);
+        
+        // Connect to SignalR if user is already logged in (fire and forget)
+        this.signalRService.connect(token).catch(error => {
+          console.error('Failed to connect to SignalR:', error);
+        });
       } catch (error) {
         this.logout();
       }

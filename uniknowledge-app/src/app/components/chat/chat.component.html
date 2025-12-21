@@ -1,0 +1,188 @@
+<div class="chat-container">
+  <!-- Conversations List -->
+  <div class="conversations-panel">
+    <div class="conversations-header">
+      <h2>Tin nhắn</h2>
+      <div class="search-container" #searchContainer>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm người để chat..."
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+          (focus)="showSearchResults.set(true)"
+          (blur)="onSearchBlur()"
+        />
+        @if (showSearchResults() && searchTerm().length >= 2) {
+          <div class="search-results">
+            @if (isSearching()) {
+              <div class="search-loading">Đang tìm...</div>
+            } @else if (searchResults().length === 0) {
+              <div class="search-empty">Không tìm thấy người dùng</div>
+            } @else {
+              @for (user of searchResults(); track user.userId) {
+                <div 
+                  class="search-result-item"
+                  (click)="selectUserFromSearch(user)">
+                  <div class="avatar">
+                    <img 
+                      [src]="getUserAvatar(user)" 
+                      [alt]="user.username"
+                      (error)="$event.target.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjMjE5NkYzIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPjwvdGV4dD4KPC9zdmc+'" />
+                  </div>
+                  <div class="user-info">
+                    <div class="username">{{ user.username }}</div>
+                    @if (user.fullName) {
+                      <div class="fullname">{{ user.fullName }}</div>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+    </div>
+    
+    <div class="conversations-list">
+      @if (isLoading() && conversations().length === 0) {
+        <div class="loading">Đang tải...</div>
+      } @else if (conversations().length === 0) {
+        <div class="empty-state">Chưa có cuộc trò chuyện nào</div>
+      } @else {
+        @for (conversation of conversations(); track conversation.otherUserId) {
+          <div 
+            class="conversation-item"
+            [class.active]="selectedUserId() === conversation.otherUserId"
+            (click)="selectConversation(conversation.otherUserId)">
+            <div class="avatar">
+              <img 
+                [src]="getConversationAvatar(conversation)" 
+                [alt]="getConversationName(conversation)"
+                (error)="$event.target.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjMjE5NkYzIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPjwvdGV4dD4KPC9zdmc+'" />
+            </div>
+            <div class="conversation-info">
+              <div class="conversation-header">
+                <span class="username">{{ getConversationName(conversation) }}</span>
+                @if (conversation.lastMessageTime) {
+                  <span class="time">{{ formatMessageTime(conversation.lastMessageTime) }}</span>
+                }
+              </div>
+              <div class="conversation-preview">
+                <span class="last-message" [class.from-me]="conversation.isLastMessageFromMe">
+                  {{ conversation.lastMessage || 'Chưa có tin nhắn' }}
+                </span>
+                @if (conversation.unreadCount > 0) {
+                  <span class="unread-badge">{{ conversation.unreadCount }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Chat Window -->
+  <div class="chat-window">
+    @if (!selectedUserId()) {
+      <div class="no-selection">
+        <p>Chọn một cuộc trò chuyện để bắt đầu</p>
+      </div>
+    } @else {
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="chat-user-info">
+          <div class="avatar">
+            @for (conversation of conversations(); track conversation.otherUserId) {
+              @if (conversation.otherUserId === selectedUserId()) {
+                <img 
+                  [src]="getConversationAvatar(conversation)" 
+                  [alt]="getConversationName(conversation)"
+                  (error)="$event.target.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjMjE5NkYzIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPjwvdGV4dD4KPC9zdmc+'" />
+              }
+            }
+          </div>
+          <div class="user-details">
+            @for (conversation of conversations(); track conversation.otherUserId) {
+              @if (conversation.otherUserId === selectedUserId()) {
+                <span class="username">{{ getConversationName(conversation) }}</span>
+                @if (typingUsers().has(selectedUserId()!)) {
+                  <span class="typing-indicator">Đang gõ...</span>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Container -->
+      <div class="messages-container" #messagesContainer>
+        @if (isLoadingMore()) {
+          <div class="loading-more">Đang tải thêm...</div>
+        }
+        
+        @if (isLoading() && messages().length === 0) {
+          <div class="loading">Đang tải tin nhắn...</div>
+        } @else if (messages().length === 0) {
+          <div class="empty-state">Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</div>
+        } @else {
+          @for (message of messages(); track message.messageId) {
+            <div class="message-wrapper" [class.my-message]="isMyMessage(message)">
+              <div class="message">
+                <div class="message-content">{{ message.content }}</div>
+                <div class="message-footer">
+                  <span class="message-time">{{ formatMessageTime(message.createdAt) }}</span>
+                  @if (isMyMessage(message)) {
+                    <span class="message-status" [class]="'status-' + (message.status || (message.isRead ? 'read' : 'sent'))">
+                      @if (message.status === 'sent') {
+                        <span class="status-icon sent">✓</span>
+                      } @else if (message.status === 'delivered') {
+                        <span class="status-icon delivered">✓✓</span>
+                      } @else if (message.status === 'read' || message.isRead) {
+                        <span class="status-icon read">✓✓</span>
+                      }
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Typing Indicator -->
+        @if (typingUsers().has(selectedUserId()!)) {
+          <div class="message-wrapper typing-wrapper">
+            <div class="message typing-message">
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-container">
+        <input
+          #messageInput
+          type="text"
+          class="message-input"
+          [(ngModel)]="messageContent"
+          (input)="onMessageInput()"
+          (blur)="onMessageInputBlur()"
+          (keypress)="onKeyPress($event)"
+          placeholder="Nhập tin nhắn..." />
+        <button
+          class="send-button"
+          (click)="sendMessage()"
+          [disabled]="!messageContent.trim()">
+          Gửi
+        </button>
+      </div>
+    }
+  </div>
+</div>
+
