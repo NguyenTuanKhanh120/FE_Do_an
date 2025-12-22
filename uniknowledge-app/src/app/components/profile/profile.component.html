@@ -1,159 +1,166 @@
 <div class="bg-gray-50 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     @if (isLoading()) {
-      <div class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-        <p class="mt-2 text-gray-600">Loading profile...</p>
-      </div>
+    <div class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <p class="mt-2 text-gray-600">Loading profile...</p>
+    </div>
     }
 
     @if (profile() && !isLoading()) {
-      <!-- Profile Header -->
-      <div class="bg-white rounded-lg shadow-md p-8 mb-6">
-        <div class="flex items-start justify-between">
-          <div class="flex items-center gap-6">
-            <div class="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
-              @if (profile()!.avatarUrl) {
-                <img [src]="profile()!.avatarUrl" [alt]="profile()!.username" class="w-24 h-24 rounded-full object-cover">
-              } @else {
-                <span class="text-4xl font-bold text-primary-600">
-                  {{ profile()!.username.charAt(0).toUpperCase() }}
+    <!-- Profile Header -->
+    <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-6">
+          <div class="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
+            @if (profile()!.avatarUrl) {
+            <img [src]="profile()!.avatarUrl" [alt]="profile()!.username" class="w-24 h-24 rounded-full object-cover">
+            } @else {
+            <span class="text-4xl font-bold text-primary-600">
+              {{ profile()!.username.charAt(0).toUpperCase() }}
+            </span>
+            }
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ profile()!.username }}</h1>
+            @if (profile()!.fullName) {
+            <p class="text-lg text-gray-600">{{ profile()!.fullName }}</p>
+            }
+            <p class="text-sm text-gray-500 mt-1">{{ profile()!.email }}</p>
+            <p class="text-sm text-gray-500">Member since {{ formatDate(profile()!.createdAt) }}</p>
+          </div>
+        </div>
+        <a routerLink="/profile/edit"
+          class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+          Edit Profile
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-gray-200">
+        <div class="text-center">
+          <div class="text-3xl font-bold text-primary-600">{{ profile()!.questionCount }}</div>
+          <div class="text-sm text-gray-600">Questions</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-green-600">{{ profile()!.answerCount }}</div>
+          <div class="text-sm text-gray-600">Answers</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-blue-600">{{ profile()!.questionCount + profile()!.answerCount }}</div>
+          <div class="text-sm text-gray-600">Total Posts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Questions -->
+    <div class="bg-white rounded-lg shadow-md p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">My Questions</h2>
+
+      @if (isLoadingQuestions()) {
+      <div class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+        <p class="mt-2 text-gray-600">Loading questions...</p>
+      </div>
+      }
+
+      @if (!isLoadingQuestions()) {
+      @if (questions().length === 0) {
+      <div class="text-center py-8">
+        <p class="text-gray-600">You haven't asked any questions yet.</p>
+        <a routerLink="/questions/new"
+          class="mt-4 inline-block px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+          Ask Your First Question
+        </a>
+      </div>
+      } @else {
+      <div class="space-y-4">
+        @for (question of questions(); track question.questionId) {
+        <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900 hover:text-primary-600 mb-2">
+                <a [routerLink]="['/questions', question.questionId]">
+                  {{ question.title }}
+                </a>
+              </h3>
+              <p class="text-gray-600 mb-3 line-clamp-2">
+                {{ question.content.substring(0, 150) }}...
+              </p>
+
+              <!-- Tags -->
+              <div class="flex flex-wrap gap-2 mb-3">
+                @for (tag of question.tags; track tag.tagId) {
+                <span
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ tag.tagName }}
                 </span>
-              }
+                }
+              </div>
             </div>
-            <div>
-              <h1 class="text-3xl font-bold text-gray-900">{{ profile()!.username }}</h1>
-              @if (profile()!.fullName) {
-                <p class="text-lg text-gray-600">{{ profile()!.fullName }}</p>
-              }
-              <p class="text-sm text-gray-500 mt-1">{{ profile()!.email }}</p>
-              <p class="text-sm text-gray-500">Member since {{ formatDate(profile()!.createdAt) }}</p>
+
+            <!-- Status Badge -->
+            <span [class]="'ml-4 px-3 py-1 rounded-full text-xs font-medium ' + getStatusBadgeClass(question.status)">
+              {{ question.status }}
+            </span>
+          </div>
+
+          <!-- Stats and Actions -->
+          <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center gap-6 text-gray-600">
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                {{ question.viewCount }} views
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                {{ question.answerCount }} answers
+              </span>
+              <span class="flex items-center gap-1" [class.text-green-600]="question.voteCount > 0"
+                [class.text-red-600]="question.voteCount < 0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+                {{ question.voteCount }} votes
+              </span>
             </div>
-          </div>
-          <a
-            routerLink="/profile/edit"
-            class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            Edit Profile
-          </a>
-        </div>
 
-        <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-gray-200">
-          <div class="text-center">
-            <div class="text-3xl font-bold text-primary-600">{{ profile()!.questionCount }}</div>
-            <div class="text-sm text-gray-600">Questions</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-green-600">{{ profile()!.answerCount }}</div>
-            <div class="text-sm text-gray-600">Answers</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-blue-600">{{ profile()!.questionCount + profile()!.answerCount }}</div>
-            <div class="text-sm text-gray-600">Total Posts</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- My Questions -->
-      <div class="bg-white rounded-lg shadow-md p-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">My Questions</h2>
-
-        @if (isLoadingQuestions()) {
-          <div class="text-center py-8">
-            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-            <p class="mt-2 text-gray-600">Loading questions...</p>
-          </div>
-        }
-
-        @if (!isLoadingQuestions()) {
-          @if (questions().length === 0) {
-            <div class="text-center py-8">
-              <p class="text-gray-600">You haven't asked any questions yet.</p>
-              <a
-                routerLink="/questions/new"
-                class="mt-4 inline-block px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
-              >
-                Ask Your First Question
+              <!-- NÚT EDIT  -->
+            <div class="flex items-center gap-2">
+              <a [routerLink]="['/questions', question.questionId, 'edit']"
+                class="px-3 py-1 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors">
+                Edit
               </a>
+
+              <!-- Nút Delete  -->
+              <button (click)="deleteQuestion(question)"
+                class="px-3 py-1 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md">
+                Delete
+              </button>
             </div>
-          } @else {
-            <div class="space-y-4">
-              @for (question of questions(); track question.questionId) {
-                <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div class="flex justify-between items-start mb-4">
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-gray-900 hover:text-primary-600 mb-2">
-                        <a [routerLink]="['/questions', question.questionId]">
-                          {{ question.title }}
-                        </a>
-                      </h3>
-                      <p class="text-gray-600 mb-3 line-clamp-2">
-                        {{ question.content.substring(0, 150) }}...
-                      </p>
-                      
-                      <!-- Tags -->
-                      <div class="flex flex-wrap gap-2 mb-3">
-                        @for (tag of question.tags; track tag.tagId) {
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ tag.tagName }}
-                          </span>
-                        }
-                      </div>
-                    </div>
+          </div>
 
-                    <!-- Status Badge -->
-                    <span [class]="'ml-4 px-3 py-1 rounded-full text-xs font-medium ' + getStatusBadgeClass(question.status)">
-                      {{ question.status }}
-                    </span>
-                  </div>
-
-                  <!-- Stats and Actions -->
-                  <div class="flex items-center justify-between text-sm">
-                    <div class="flex items-center gap-6 text-gray-600">
-                      <span class="flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                        {{ question.viewCount }} views
-                      </span>
-                      <span class="flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                        </svg>
-                        {{ question.answerCount }} answers
-                      </span>
-                      <span class="flex items-center gap-1" [class.text-green-600]="question.voteCount > 0" [class.text-red-600]="question.voteCount < 0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                        </svg>
-                        {{ question.voteCount }} votes
-                      </span>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                      <button
-                        (click)="deleteQuestion(question)"
-                        class="px-3 py-1 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
-                    Created {{ formatDate(question.createdAt) }}
-                    @if (question.updatedAt) {
-                      · Updated {{ formatDate(question.updatedAt) }}
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          }
+          <div class="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
+            Created {{ formatDate(question.createdAt) }}
+            @if (question.updatedAt) {
+            · Updated {{ formatDate(question.updatedAt) }}
+            }
+          </div>
+        </div>
         }
       </div>
+      }
+      }
+    </div>
     }
   </div>
 </div>

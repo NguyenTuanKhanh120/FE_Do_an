@@ -10,7 +10,7 @@ export interface Question {
   viewCount: number;
   status: string;
   imageUrl?: string;
-  fileUrl?: string;
+  fileUrl?: string; 
   createdAt: Date;
   updatedAt?: Date;
   userId: number;
@@ -30,15 +30,16 @@ export interface CreateQuestionRequest {
   categoryId: number;
   tagIds: number[];
   imageUrl?: string;
-  fileUrl?: string;
+  fileUrl?: string; // thêm fileUrl
 }
 
 export interface UpdateQuestionRequest {
-  title: string;
-  content: string;
-  categoryId: number;
-  tagIds: number[];
+  title?: string;
+  content?: string;
+  categoryId?: number;
+  tagIds?: number[];
   imageUrl?: string;
-  attachmentUrl?: string;
+  fileUrl?: string; //thêm fileUrl
+  status?: string;
 }
 

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
 
 
 
@@ -30,10 +31,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'questions/:id/edit',
+    loadComponent: () => import('./components/edit-question/edit-question.component').then(m => m.EditQuestionComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'questions/:id',
     loadComponent: () => import('./components/question-detail/question-detail.component').then(m => m.QuestionDetailComponent)
   },
-    {
+  {
     path: 'profile',
     loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [authGuard]
@@ -44,13 +50,13 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-  path: 'forgot-password',
-  loadComponent: () => import('./components/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
-},
+    path: 'forgot-password',
+    loadComponent: () => import('./components/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
   {
-  path: 'reset-password',
-  loadComponent: () => import('./components/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
-},
+    path: 'reset-password',
+    loadComponent: () => import('./components/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
   {
     path: 'chat',
     loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent),
@@ -61,6 +67,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/chat/chat.component').then(m => m.ChatComponent),
     canActivate: [authGuard]
   },
+  {
+  path: 'admin/categories',
+  loadComponent: () => import('./components/admin-categories/admin-categories.component').then(m => m.AdminCategoriesComponent),
+  canActivate: [authGuard, adminGuard]
+},
   {
     path: '**',
     redirectTo: ''
