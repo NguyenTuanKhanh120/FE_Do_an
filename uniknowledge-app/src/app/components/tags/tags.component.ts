@@ -14,13 +14,18 @@ export class TagsComponent implements OnInit {
   private tagService = inject(TagService);
   
   tags = signal<TagDetail[]>([]);
+  popularTags = signal<TagDetail[]>([]);
+  trendingTags = signal<TagDetail[]>([]);
+  activeTab = signal<'all' | 'popular' | 'trending'>('all');
   isLoading = signal<boolean>(false);
 
   ngOnInit(): void {
-    this.loadTags();
+    this.loadAllTags();
+    this.loadPopularTags();
+    this.loadTrendingTags();
   }
 
-  loadTags(): void {
+  loadAllTags(): void {
     this.isLoading.set(true);
     this.tagService.getTags().subscribe({
       next: (tags) => {
@@ -31,6 +36,34 @@ export class TagsComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  loadPopularTags(): void {
+    this.tagService.getPopularTags(20).subscribe({
+      next: (tags) => {
+        this.popularTags.set(tags);
+      }
+    });
+  }
+
+  loadTrendingTags(): void {
+    this.tagService.getTrendingTags(7, 20).subscribe({
+      next: (tags) => {
+        this.trendingTags.set(tags);
+      }
+    });
+  }
+
+  setActiveTab(tab: 'all' | 'popular' | 'trending'): void {
+    this.activeTab.set(tab);
+  }
+
+  getCurrentTags(): TagDetail[] {
+    switch (this.activeTab()) {
+      case 'popular': return this.popularTags();
+      case 'trending': return this.trendingTags();
+      default: return this.tags();
+    }
   }
 }
 

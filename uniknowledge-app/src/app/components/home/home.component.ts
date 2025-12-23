@@ -29,6 +29,8 @@ export class HomeComponent implements OnInit {
   searchTerm = '';
   selectedCategoryId?: number;
   selectedTagId?: number;
+  selectedTagIds = signal<number[]>([]);
+  tagFilterLogic = signal<'AND' | 'OR'>('OR');
 
   ngOnInit(): void {
     this.loadQuestions();
@@ -85,14 +87,57 @@ export class HomeComponent implements OnInit {
   }
 
   onTagClick(tagId: number): void {
-    this.selectedTagId = tagId;
-    this.loadQuestions();
+    const currentTags = this.selectedTagIds();
+    const index = currentTags.indexOf(tagId);
+    
+    if (index > -1) {
+      // Remove tag
+      this.selectedTagIds.set(currentTags.filter(id => id !== tagId));
+    } else {
+      // Add tag
+      this.selectedTagIds.set([...currentTags, tagId]);
+    }
+    
+    this.loadQuestionsWithMultipleTags();
+  }
+
+  loadQuestionsWithMultipleTags(): void {
+    const tagIds = this.selectedTagIds();
+    
+    if (tagIds.length === 0) {
+      this.loadQuestions();
+      return;
+    }
+    
+    this.isLoading.set(true);
+    this.tagService.filterQuestionsByTags({
+      tagIds: tagIds,
+      logic: this.tagFilterLogic(),
+      page: 1,
+      pageSize: 20
+    }).subscribe({
+      next: (response) => {
+        this.questions.set(response.questions);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  toggleTagFilterLogic(): void {
+    this.tagFilterLogic.set(this.tagFilterLogic() === 'AND' ? 'OR' : 'AND');
+    if (this.selectedTagIds().length > 1) {
+      this.loadQuestionsWithMultipleTags();
+    }
   }
 
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategoryId = undefined;
     this.selectedTagId = undefined;
+    this.selectedTagIds.set([]);
     this.loadQuestions();
   }
 

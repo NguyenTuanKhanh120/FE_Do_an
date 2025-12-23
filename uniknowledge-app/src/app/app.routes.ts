@@ -68,10 +68,15 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-  path: 'admin/categories',
-  loadComponent: () => import('./components/admin-categories/admin-categories.component').then(m => m.AdminCategoriesComponent),
-  canActivate: [authGuard, adminGuard]
-},
+    path: 'admin/categories',
+    loadComponent: () => import('./components/admin-categories/admin-categories.component').then(m => m.AdminCategoriesComponent),
+    canActivate: [authGuard, adminGuard]
+  },
+  {
+    path: 'admin/tags',
+    loadComponent: () => import('./components/admin-tags/admin-tags.component').then(m => m.AdminTagsComponent),
+    canActivate: [authGuard, adminGuard]
+  },
   {
     path: '**',
     redirectTo: ''

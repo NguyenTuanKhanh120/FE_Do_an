@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { QuestionService } from '../../services/question.service';
@@ -13,7 +13,7 @@ import { TagDetail } from '../../models/tag.model';
 @Component({
   selector: 'app-create-question',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './create-question.component.html',
   styleUrls: ['./create-question.component.scss']
 })
@@ -35,6 +35,9 @@ export class CreateQuestionComponent implements OnInit {
   selectedFileName = signal<string>('');
   uploadedFilePath = signal<string | null>(null);
   uploadProgress = signal<number>(0);
+  tagSearchQuery = signal<string>('');
+  suggestedTags = signal<TagDetail[]>([]);
+  isSearchingTags = signal<boolean>(false);
 
   constructor() {
     this.questionForm = this.fb.group({
@@ -79,6 +82,25 @@ export class CreateQuestionComponent implements OnInit {
 
   isTagSelected(tagId: number): boolean {
     return this.selectedTags().includes(tagId);
+  }
+
+  searchTags(): void {
+    const query = this.tagSearchQuery();
+    if (query.length < 2) {
+      this.suggestedTags.set([]);
+      return;
+    }
+    
+    this.isSearchingTags.set(true);
+    this.tagService.suggestTags(query, 10).subscribe({
+      next: (tags) => {
+        this.suggestedTags.set(tags);
+        this.isSearchingTags.set(false);
+      },
+      error: () => {
+        this.isSearchingTags.set(false);
+      }
+    });
   }
 
   onFileSelected(event: Event): void {
