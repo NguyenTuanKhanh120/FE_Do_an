@@ -7,89 +7,67 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
           <div class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
-              <input
-                type="text"
-                [(ngModel)]="searchTerm"
-                (keyup.enter)="onSearch()"
-                placeholder="Search questions..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
+              <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Search questions..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
             </div>
-            <select
-              [(ngModel)]="selectedCategoryId"
-              (change)="onCategoryChange($any($event.target).value)"
-              class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
+            <select [(ngModel)]="selectedCategoryId" (change)="onCategoryChange($any($event.target).value)"
+              class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
               <option [value]="undefined">All Categories</option>
               @for (category of categories(); track category.categoryId) {
-                <option [value]="category.categoryId">{{ category.categoryName }}</option>
+              <option [value]="category.categoryId">{{ category.categoryName }}</option>
               }
             </select>
-            <button
-              (click)="onSearch()"
-              class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
+            <button (click)="onSearch()"
+              class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
               Search
             </button>
           </div>
           @if (selectedCategoryId || selectedTagId || searchTerm || selectedTagIds().length > 0) {
-            <div class="mt-4">
-              <button
-                (click)="clearFilters()"
-                class="text-sm text-primary-600 hover:text-primary-700"
-              >
-                Clear all filters
-              </button>
-            </div>
+          <div class="mt-4">
+            <button (click)="clearFilters()" class="text-sm text-primary-600 hover:text-primary-700">
+              Clear all filters
+            </button>
+          </div>
           }
-          
+
           <!-- Multiple Tag Filter -->
           @if (selectedTagIds().length > 0) {
-            <div class="mt-4 space-y-3">
-              <!-- Selected tags -->
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-sm text-gray-600">Filtered by tags:</span>
-                @for (tagId of selectedTagIds(); track tagId) {
-                  @for (tag of popularTags(); track tag.tagId) {
-                    @if (tag.tagId === tagId) {
-                      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
-                        {{ tag.tagName }}
-                        <button
-                          type="button"
-                          (click)="onTagClick(tagId)"
-                          class="ml-2 hover:text-gray-200"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    }
-                  }
-                }
-              </div>
-              
-              <!-- AND/OR toggle -->
-              @if (selectedTagIds().length > 1) {
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-gray-600">Match:</span>
-                  <button
-                    type="button"
-                    (click)="toggleTagFilterLogic()"
-                    class="px-3 py-1 text-sm rounded-md border transition-colors"
-                    [class.bg-primary-600]="tagFilterLogic() === 'AND'"
-                    [class.text-white]="tagFilterLogic() === 'AND'"
-                    [class.border-primary-600]="tagFilterLogic() === 'AND'"
-                    [class.bg-white]="tagFilterLogic() === 'OR'"
-                    [class.text-gray-700]="tagFilterLogic() === 'OR'"
-                    [class.border-gray-300]="tagFilterLogic() === 'OR'"
-                  >
-                    {{ tagFilterLogic() === 'AND' ? 'ALL tags (AND)' : 'ANY tag (OR)' }}
-                  </button>
-                  <span class="text-xs text-gray-500">
-                    {{ tagFilterLogic() === 'AND' ? 'Questions must have all selected tags' : 'Questions must have at least one selected tag' }}
-                  </span>
-                </div>
+          <div class="mt-4 space-y-3">
+            <!-- Selected tags -->
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-sm text-gray-600">Filtered by tags:</span>
+              @for (tagId of selectedTagIds(); track tagId) {
+              @for (tag of popularTags(); track tag.tagId) {
+              @if (tag.tagId === tagId) {
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
+                {{ tag.tagName }}
+                <button type="button" (click)="onTagClick(tagId)" class="ml-2 hover:text-gray-200">
+                  ×
+                </button>
+              </span>
+              }
+              }
               }
             </div>
+
+            <!-- AND/OR toggle -->
+            @if (selectedTagIds().length > 1) {
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-600">Match:</span>
+              <button type="button" (click)="toggleTagFilterLogic()"
+                class="px-3 py-1 text-sm rounded-md border transition-colors"
+                [class.bg-primary-600]="tagFilterLogic() === 'AND'" [class.text-white]="tagFilterLogic() === 'AND'"
+                [class.border-primary-600]="tagFilterLogic() === 'AND'" [class.bg-white]="tagFilterLogic() === 'OR'"
+                [class.text-gray-700]="tagFilterLogic() === 'OR'" [class.border-gray-300]="tagFilterLogic() === 'OR'">
+                {{ tagFilterLogic() === 'AND' ? 'ALL tags (AND)' : 'ANY tag (OR)' }}
+              </button>
+              <span class="text-xs text-gray-500">
+                {{ tagFilterLogic() === 'AND' ? 'Questions must have all selected tags' : 'Questions must have at least
+                one selected tag' }}
+              </span>
+            </div>
+            }
+          </div>
           }
         </div>
 
@@ -102,88 +80,110 @@
 
         <!-- Loading State -->
         @if (isLoading()) {
-          <div class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            <p class="mt-2 text-gray-600">Loading questions...</p>
-          </div>
+        <div class="text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <p class="mt-2 text-gray-600">Loading questions...</p>
+        </div>
         }
 
         <!-- Questions List -->
         @if (!isLoading()) {
-          @if (questions().length === 0) {
-            <div class="bg-white rounded-lg shadow p-8 text-center">
-              <p class="text-gray-600">No questions found. Be the first to ask!</p>
-            </div>
-          } @else {
-            <div class="space-y-4">
-              @for (question of questions(); track question.questionId) {
-                <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6">
-                  <div class="flex gap-4">
-                    <!-- Stats -->
-                    <div class="flex flex-col items-center gap-2 text-sm min-w-[80px]">
-                      <div class="text-center">
-                        <div class="text-lg font-semibold" [class.text-green-600]="question.voteCount > 0" [class.text-red-600]="question.voteCount < 0">
-                          {{ question.voteCount }}
-                        </div>
-                        <div class="text-gray-600">votes</div>
-                      </div>
-                      <div class="text-center">
-                        <div class="text-lg font-semibold" [class.text-green-600]="question.hasAcceptedAnswer">
-                          {{ question.answerCount }}
-                        </div>
-                        <div class="text-gray-600">answers</div>
-                      </div>
-                      <div class="text-center">
-                        <div class="text-lg font-semibold text-gray-700">
-                          {{ question.viewCount }}
-                        </div>
-                        <div class="text-gray-600">views</div>
-                      </div>
-                    </div>
+        @if (questions().length === 0) {
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+          <p class="text-gray-600">No questions found. Be the first to ask!</p>
+        </div>
+        } @else {
+        <div class="space-y-4">
+          @for (question of questions(); track question.questionId) {
+          <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6">
+            <div class="flex gap-4">
+              <!-- Stats -->
+              <div class="flex flex-col items-center gap-2 text-sm min-w-[80px]">
+                <div class="text-center">
+                  <div class="text-lg font-semibold" [class.text-green-600]="question.voteCount > 0"
+                    [class.text-red-600]="question.voteCount < 0">
+                    {{ question.voteCount }}
+                  </div>
+                  <div class="text-gray-600">votes</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-semibold" [class.text-green-600]="question.hasAcceptedAnswer">
+                    {{ question.answerCount }}
+                  </div>
+                  <div class="text-gray-600">answers</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg font-semibold text-gray-700">
+                    {{ question.viewCount }}
+                  </div>
+                  <div class="text-gray-600">views</div>
+                </div>
+              </div>
 
-                    <!-- Question Content -->
-                    <div class="flex-1 min-w-0">
-                      <h2 class="text-lg font-semibold text-gray-900 hover:text-primary-600 mb-2">
-                        <a [routerLink]="['/questions', question.questionId]">
-                          {{ question.title }}
-                        </a>
-                      </h2>
-                      
-                      <div class="text-gray-600 mb-3 line-clamp-2">
-                        {{ question.content.substring(0, 200) }}...
-                      </div>
+              <!-- Question Content -->
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg font-semibold text-gray-900 hover:text-primary-600 mb-2">
+                  <a [routerLink]="['/questions', question.questionId]">
+                    {{ question.title }}
+                  </a>
+                </h2>
 
-                      <!-- Tags -->
-                      <div class="flex flex-wrap gap-2 mb-3">
-                        @for (tag of question.tags; track tag.tagId) {
-                          <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200"
-                            (click)="onTagClick(tag.tagId)"
-                          >
-                            {{ tag.tagName }}
-                          </span>
-                        }
-                      </div>
+                <div class="text-gray-600 mb-3 line-clamp-2">
+                  {{ question.content.substring(0, 200) }}...
+                </div>
 
-                      <!-- Meta Information -->
-                      <div class="flex items-center justify-between text-sm text-gray-500">
-                        <div class="flex items-center gap-2">
-                          @if (question.categoryName) {
-                            <span class="text-primary-600">{{ question.categoryName }}</span>
-                          }
-                        </div>
-                        <div class="flex items-center gap-2">
-                          <span>asked by <span class="font-medium text-gray-700">{{ question.username }}</span></span>
-                          <span>•</span>
-                          <span>{{ formatDate(question.createdAt) }}</span>
-                        </div>
-                      </div>
-                    </div>
+                <!-- Tags -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                  @for (tag of question.tags; track tag.tagId) {
+                  <span
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200"
+                    (click)="onTagClick(tag.tagId)">
+                    {{ tag.tagName }}
+                  </span>
+                  }
+                </div>
+
+                <!-- Meta Information -->
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                  <div class="flex items-center gap-2">
+                    @if (question.categoryName) {
+                    <span class="text-primary-600">{{ question.categoryName }}</span>
+                    }
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span>asked by <span class="font-medium text-gray-700">{{ question.username }}</span></span>
+                    <span>•</span>
+                    <span>{{ formatDate(question.createdAt) }}</span>
                   </div>
                 </div>
-              }
+              </div>
             </div>
+          </div>
           }
+        </div>
+
+        <!-- Pagination Controls -->
+        @if (questions().length > 0) {
+        <div class="mt-8 flex items-center justify-center gap-2">
+          <!-- Previous Button -->
+          <button (click)="previousPage()" [disabled]="currentPage() === 1"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+          </button>
+
+          <!-- Page Number -->
+          <span class="px-4 py-2 text-sm text-gray-700">
+            Page {{ currentPage() }}
+          </span>
+
+          <!-- Next Button -->
+          <button (click)="nextPage()" [disabled]="!hasNextPage"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+          </button>
+        </div>
+        }
+        }
         }
       </div>
 
@@ -194,13 +194,11 @@
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Popular Tags</h3>
           <div class="flex flex-wrap gap-2">
             @for (tag of popularTags(); track tag.tagId) {
-              <button
-                (click)="onTagClick(tag.tagId)"
-                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200"
-              >
-                {{ tag.tagName }}
-                <span class="ml-1 text-blue-600">({{ tag.questionCount }})</span>
-              </button>
+            <button (click)="onTagClick(tag.tagId)"
+              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200">
+              {{ tag.tagName }}
+              <span class="ml-1 text-blue-600">({{ tag.questionCount }})</span>
+            </button>
             }
           </div>
         </div>
@@ -210,13 +208,11 @@
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
           <div class="space-y-2">
             @for (category of categories(); track category.categoryId) {
-              <button
-                (click)="onCategoryChange(category.categoryId.toString())"
-                class="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 flex items-center justify-between"
-              >
-                <span class="text-gray-700">{{ category.categoryName }}</span>
-                <span class="text-sm text-gray-500">{{ category.questionCount }}</span>
-              </button>
+            <button (click)="onCategoryChange(category.categoryId.toString())"
+              class="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 flex items-center justify-between">
+              <span class="text-gray-700">{{ category.categoryName }}</span>
+              <span class="text-sm text-gray-500">{{ category.questionCount }}</span>
+            </button>
             }
           </div>
         </div>
@@ -224,4 +220,3 @@
     </div>
   </div>
 </div>
-

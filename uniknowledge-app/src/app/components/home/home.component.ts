@@ -25,12 +25,17 @@ export class HomeComponent implements OnInit {
   categories = signal<Category[]>([]);
   popularTags = signal<TagDetail[]>([]);
   isLoading = signal<boolean>(false);
-  
+
   searchTerm = '';
   selectedCategoryId?: number;
   selectedTagId?: number;
   selectedTagIds = signal<number[]>([]);
   tagFilterLogic = signal<'AND' | 'OR'>('OR');
+
+  // Pagination
+  currentPage = signal<number>(1);
+  pageSize = 20;
+  totalQuestions = signal<number>(0);
 
   ngOnInit(): void {
     this.loadQuestions();
@@ -43,10 +48,14 @@ export class HomeComponent implements OnInit {
     this.questionService.getQuestions(
       this.searchTerm || undefined,
       this.selectedCategoryId,
-      this.selectedTagId
+      this.selectedTagId,
+      undefined,
+      this.currentPage(),
+      this.pageSize
     ).subscribe({
       next: (questions) => {
         this.questions.set(questions);
+        this.totalQuestions.set(questions.length);
         this.isLoading.set(false);
       },
       error: () => {
@@ -89,7 +98,7 @@ export class HomeComponent implements OnInit {
   onTagClick(tagId: number): void {
     const currentTags = this.selectedTagIds();
     const index = currentTags.indexOf(tagId);
-    
+
     if (index > -1) {
       // Remove tag
       this.selectedTagIds.set(currentTags.filter(id => id !== tagId));
@@ -97,18 +106,18 @@ export class HomeComponent implements OnInit {
       // Add tag
       this.selectedTagIds.set([...currentTags, tagId]);
     }
-    
+
     this.loadQuestionsWithMultipleTags();
   }
 
   loadQuestionsWithMultipleTags(): void {
     const tagIds = this.selectedTagIds();
-    
+
     if (tagIds.length === 0) {
       this.loadQuestions();
       return;
     }
-    
+
     this.isLoading.set(true);
     this.tagService.filterQuestionsByTags({
       tagIds: tagIds,
@@ -138,7 +147,37 @@ export class HomeComponent implements OnInit {
     this.selectedCategoryId = undefined;
     this.selectedTagId = undefined;
     this.selectedTagIds.set([]);
+    this.currentPage.set(1);
     this.loadQuestions();
+  }
+
+  // Pagination methods
+  nextPage(): void {
+    this.currentPage.update(page => page + 1);
+    this.loadQuestions();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(page => page - 1);
+      this.loadQuestions();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.loadQuestions();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalQuestions() / this.pageSize);
+  }
+
+  get hasNextPage(): boolean {
+    return this.questions().length === this.pageSize;
   }
 
   formatDate(date: Date): string {

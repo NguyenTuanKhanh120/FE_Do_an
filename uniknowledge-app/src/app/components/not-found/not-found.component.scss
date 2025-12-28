@@ -1,0 +1,128 @@
+.not-found-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.not-found-card {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.icon-container {
+    margin-bottom: 2rem;
+}
+
+.error-icon {
+    font-size: 120px;
+    width: 120px;
+    height: 120px;
+    color: #667eea;
+}
+
+.error-code {
+    font-size: 6rem;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+    line-height: 1;
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    color: #555;
+}
+
+.error-description {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+
+    a {
+        min-width: 160px;
+    }
+
+    mat-icon {
+        margin-right: 0.5rem;
+    }
+}
+
+.additional-help {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.help-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.help-links {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    mat-icon {
+        margin-right: 0.25rem;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// Responsive design
+@media (max-width: 600px) {
+    .not-found-card {
+        padding: 1.5rem;
+    }
+
+    .error-code {
+        font-size: 4rem;
+    }
+
+    .error-title {
+        font-size: 1.5rem;
+    }
+
+    .error-icon {
+        font-size: 80px;
+        width: 80px;
+        height: 80px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+
+        a {
+            width: 100%;
+        }
+    }
+
+    .help-links {
+        flex-direction: column;
+
+        a {
+            width: 100%;
+        }
+    }
+}

@@ -1,0 +1,39 @@
+<div class="not-found-container">
+    <mat-card class="not-found-card">
+        <mat-card-content>
+            <!-- Error Message -->
+            <h1 class="error-code">404</h1>
+            <h2 class="error-title">Trang không tồn tại</h2>
+            <p class="error-description">
+                Xin lỗi, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm.
+                URL có thể đã bị thay đổi hoặc không còn tồn tại.
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a mat-raised-button color="primary" routerLink="/">
+                    Về trang chủ
+                </a>
+
+                @if (!authService.isAuthenticated()) {
+                <a mat-raised-button routerLink="/login">
+                    Đăng nhập
+                </a>
+                }
+            </div>
+
+            <!-- Additional Help -->
+            <div class="additional-help">
+                <p class="help-text">Hoặc bạn có thể:</p>
+                <div class="help-links">
+                    <a mat-button routerLink="/tags">
+                        Xem các tags phổ biến
+                    </a>
+                    <a mat-button routerLink="/categories">
+                        Duyệt qua các danh mục
+                    </a>
+                </div>
+            </div>
+        </mat-card-content>
+    </mat-card>
+</div>
