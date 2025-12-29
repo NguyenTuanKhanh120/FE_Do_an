@@ -1,0 +1,6 @@
+<div class="space-y-6">
+    @for (question of questions(); track question.questionId) {
+    <app-question-item [question]="question" (tagClick)="onTagClick($event)">
+    </app-question-item>
+    }
+</div>

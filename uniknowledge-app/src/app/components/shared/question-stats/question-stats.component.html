@@ -1,0 +1,26 @@
+<div class="flex flex-col items-center gap-2 text-sm min-w-[80px]">
+    <!-- Votes -->
+    <div class="text-center">
+        <div class="text-lg font-semibold" [class.text-green-600]="question().voteCount > 0"
+            [class.text-red-600]="question().voteCount < 0">
+            {{ question().voteCount }}
+        </div>
+        <div class="text-gray-600">votes</div>
+    </div>
+
+    <!-- Answers -->
+    <div class="text-center">
+        <div class="text-lg font-semibold" [class.text-green-600]="question().hasAcceptedAnswer">
+            {{ question().answerCount }}
+        </div>
+        <div class="text-gray-600">answers</div>
+    </div>
+
+    <!-- Views -->
+    <div class="text-center">
+        <div class="text-lg font-semibold text-gray-700">
+            {{ question().viewCount }}
+        </div>
+        <div class="text-gray-600">views</div>
+    </div>
+</div>

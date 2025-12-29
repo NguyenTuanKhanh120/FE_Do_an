@@ -24,17 +24,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (this.authService.isAuthenticated()) {
       this.loadUnreadCount();
-      
+
       // Subscribe to new messages to update unread count
       this.signalRService.messageReceived$.subscribe(() => {
         this.loadUnreadCount();
       });
-      
+
       // Subscribe to message sent events to update unread count (for receiver)
       this.signalRService.messageSent$.subscribe(() => {
         this.loadUnreadCount();
       });
-      
+
       // Subscribe to message read events to update unread count
       this.signalRService.messageRead$.subscribe(() => {
         this.loadUnreadCount();
@@ -67,8 +67,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.authService.logout();
   }
   isAdmin(): boolean {
-  const user = this.authService.currentUser();
-  return user?.role === 'Admin';
-}
+    const user = this.authService.currentUser();
+    return user?.role === 'Admin';
+  }
 }
 

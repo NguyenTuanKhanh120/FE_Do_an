@@ -1,0 +1,11 @@
+/* Add margin to each question item */
+:host {
+    display: block;
+    margin-bottom: 1.5rem;
+    /* 24px spacing between items */
+}
+
+:host:last-child {
+    margin-bottom: 0;
+    /* Remove margin from last item */
+}

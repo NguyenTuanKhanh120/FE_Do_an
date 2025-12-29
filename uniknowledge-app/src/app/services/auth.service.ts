@@ -49,7 +49,7 @@ export class AuthService {
     } catch (error) {
       console.error('Error disconnecting SignalR:', error);
     }
-    
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUser.set(null);
@@ -79,7 +79,7 @@ export class AuthService {
       localStorage.setItem('user', JSON.stringify(response.user));
       this.currentUser.set(response.user);
       this.isAuthenticated.set(true);
-      
+
       // Connect to SignalR after successful login (fire and forget)
       this.signalRService.connect(response.token).catch(error => {
         console.error('Failed to connect to SignalR:', error);
@@ -104,7 +104,7 @@ export class AuthService {
         const user = JSON.parse(userJson);
         this.currentUser.set(user);
         this.isAuthenticated.set(true);
-        
+
         // Connect to SignalR if user is already logged in (fire and forget)
         this.signalRService.connect(token).catch(error => {
           console.error('Failed to connect to SignalR:', error);

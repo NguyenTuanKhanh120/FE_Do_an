@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuestionService } from '../../services/question.service';
 import { CategoryService } from '../../services/category.service';
@@ -8,11 +7,13 @@ import { TagService } from '../../services/tag.service';
 import { Question } from '../../models/question.model';
 import { Category } from '../../models/category.model';
 import { TagDetail } from '../../models/tag.model';
+import { QuestionListComponent } from '../shared/question-list/question-list.component';
+import { HomeSidebarComponent } from '../shared/home-sidebar/home-sidebar.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, FormsModule, QuestionListComponent, HomeSidebarComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
@@ -28,9 +29,7 @@ export class HomeComponent implements OnInit {
 
   searchTerm = '';
   selectedCategoryId?: number;
-  selectedTagId?: number;
   selectedTagIds = signal<number[]>([]);
-  tagFilterLogic = signal<'AND' | 'OR'>('OR');
 
   // Pagination
   currentPage = signal<number>(1);
@@ -48,7 +47,7 @@ export class HomeComponent implements OnInit {
     this.questionService.getQuestions(
       this.searchTerm || undefined,
       this.selectedCategoryId,
-      this.selectedTagId,
+      undefined,  // No single tag filter, using selectedTagIds instead
       undefined,
       this.currentPage(),
       this.pageSize
@@ -92,6 +91,7 @@ export class HomeComponent implements OnInit {
 
   onCategoryChange(categoryId: string): void {
     this.selectedCategoryId = categoryId ? parseInt(categoryId) : undefined;
+    this.currentPage.set(1);  // Reset to page 1 when filter changes
     this.loadQuestions();
   }
 
@@ -121,7 +121,7 @@ export class HomeComponent implements OnInit {
     this.isLoading.set(true);
     this.tagService.filterQuestionsByTags({
       tagIds: tagIds,
-      logic: this.tagFilterLogic(),
+      logic: 'OR',  // Always use OR logic for multiple tags
       page: 1,
       pageSize: 20
     }).subscribe({
@@ -135,17 +135,9 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  toggleTagFilterLogic(): void {
-    this.tagFilterLogic.set(this.tagFilterLogic() === 'AND' ? 'OR' : 'AND');
-    if (this.selectedTagIds().length > 1) {
-      this.loadQuestionsWithMultipleTags();
-    }
-  }
-
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategoryId = undefined;
-    this.selectedTagId = undefined;
     this.selectedTagIds.set([]);
     this.currentPage.set(1);
     this.loadQuestions();
@@ -164,16 +156,6 @@ export class HomeComponent implements OnInit {
       this.loadQuestions();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }
-
-  goToPage(page: number): void {
-    this.currentPage.set(page);
-    this.loadQuestions();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.totalQuestions() / this.pageSize);
   }
 
   get hasNextPage(): boolean {
