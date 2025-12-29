@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { QuestionService } from '../../services/question.service';
 import { AnswerService } from '../../services/answer.service';
@@ -10,18 +9,20 @@ import { AuthService } from '../../services/auth.service';
 import { Question } from '../../models/question.model';
 import { Answer } from '../../models/answer.model';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../confirmation-dialog/confirmation-dialog.component';
+import { VotingComponent } from '../shared/voting/voting.component';
+import { AnswerListComponent } from '../shared/answer-list/answer-list.component';
+import { AnswerFormComponent } from '../shared/answer-form/answer-form.component';
 
 @Component({
   selector: 'app-question-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, RouterLink, VotingComponent, AnswerListComponent, AnswerFormComponent],
   templateUrl: './question-detail.component.html',
   styleUrls: ['./question-detail.component.scss']
 })
 export class QuestionDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private fb = inject(FormBuilder);
   private questionService = inject(QuestionService);
   private answerService = inject(AnswerService);
   private voteService = inject(VoteService);
@@ -31,13 +32,6 @@ export class QuestionDetailComponent implements OnInit {
   question = signal<Question | null>(null);
   answers = signal<Answer[]>([]);
   isLoading = signal<boolean>(false);
-  answerForm: FormGroup;
-
-  constructor() {
-    this.answerForm = this.fb.group({
-      content: ['', [Validators.required, Validators.minLength(20)]]
-    });
-  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -82,8 +76,16 @@ export class QuestionDetailComponent implements OnInit {
     });
   }
 
-  voteAnswer(answerId: number, voteType: 'upvote' | 'downvote'): void {
-    this.voteService.voteAnswer(answerId, voteType).subscribe({
+  onQuestionUpvote(): void {
+    this.voteQuestion('upvote');
+  }
+
+  onQuestionDownvote(): void {
+    this.voteQuestion('downvote');
+  }
+
+  onAnswerUpvote(answerId: number): void {
+    this.voteService.voteAnswer(answerId, 'upvote').subscribe({
       next: () => {
         const question = this.question();
         if (question) {
@@ -96,18 +98,26 @@ export class QuestionDetailComponent implements OnInit {
     });
   }
 
-  submitAnswer(): void {
-    if (this.answerForm.invalid) {
-      this.answerForm.markAllAsTouched();
-      return;
-    }
+  onAnswerDownvote(answerId: number): void {
+    this.voteService.voteAnswer(answerId, 'downvote').subscribe({
+      next: () => {
+        const question = this.question();
+        if (question) {
+          this.loadAnswers(question.questionId);
+        }
+      },
+      error: (error) => {
+        alert(error.error?.message || 'Failed to vote');
+      }
+    });
+  }
 
+  onSubmitAnswer(content: string): void {
     const question = this.question();
     if (!question) return;
 
-    this.answerService.createAnswer(question.questionId, this.answerForm.value).subscribe({
+    this.answerService.createAnswer(question.questionId, { content }).subscribe({
       next: () => {
-        this.answerForm.reset();
         this.loadAnswers(question.questionId);
         this.loadQuestion(question.questionId);
       },
@@ -130,7 +140,6 @@ export class QuestionDetailComponent implements OnInit {
 
   getFileName(fileUrl: string): string {
     try {
-      // Handle both full URL and relative path
       let path: string;
       if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
         const url = new URL(fileUrl);
@@ -138,23 +147,20 @@ export class QuestionDetailComponent implements OnInit {
       } else {
         path = fileUrl;
       }
-      
+
       const pathParts = path.split('/');
       const fileName = pathParts[pathParts.length - 1];
       return fileName || 'attachment';
     } catch {
-      // If parsing fails, try to extract from path
       const parts = fileUrl.split('/');
       return parts[parts.length - 1] || 'attachment';
     }
   }
 
   getFileUrl(fileUrl: string): string {
-    // If it's already a full URL, return as is
     if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
       return fileUrl;
     }
-    // Otherwise, construct full URL from relative path
     const baseUrl = 'http://localhost:5134';
     return fileUrl.startsWith('/') ? `${baseUrl}${fileUrl}` : `${baseUrl}/${fileUrl}`;
   }
@@ -163,6 +169,12 @@ export class QuestionDetailComponent implements OnInit {
     const question = this.question();
     const currentUser = this.authService.currentUser();
     return question !== null && currentUser !== null && question.userId === currentUser.userId;
+  }
+
+  canVoteQuestion(): boolean {
+    const question = this.question();
+    const currentUser = this.authService.currentUser();
+    return this.authService.isAuthenticated() && question !== null && currentUser !== null && question.userId !== currentUser.userId;
   }
 
   deleteQuestion(): void {
@@ -186,7 +198,6 @@ export class QuestionDetailComponent implements OnInit {
       if (confirmed) {
         this.questionService.deleteQuestion(question.questionId).subscribe({
           next: () => {
-            // Redirect to home page after successful deletion
             this.router.navigate(['/']);
           },
           error: (error) => {
@@ -206,9 +217,4 @@ export class QuestionDetailComponent implements OnInit {
       }
     });
   }
-
-  get content() {
-    return this.answerForm.get('content');
-  }
 }
-

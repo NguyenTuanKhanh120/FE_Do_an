@@ -1,0 +1,25 @@
+<div class="bg-white rounded-lg shadow p-8">
+    <h3 class="text-xl font-bold text-gray-900 mb-4">Your Answer</h3>
+    <form [formGroup]="answerForm" (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+            <textarea formControlName="content" rows="8"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                placeholder="Write your answer here...">
+      </textarea>
+            @if (content?.invalid && content?.touched) {
+            <div class="text-red-600 text-sm mt-1">
+                @if (content?.errors?.['required']) {
+                Answer is required
+                }
+                @if (content?.errors?.['minlength']) {
+                Answer must be at least 20 characters
+                }
+            </div>
+            }
+        </div>
+        <button type="submit"
+            class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            Post Answer
+        </button>
+    </form>
+</div>

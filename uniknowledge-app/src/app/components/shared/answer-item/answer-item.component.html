@@ -1,0 +1,21 @@
+<div class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+    <div class="flex gap-6">
+        <!-- Voting -->
+        <app-voting [voteCount]="answer().voteCount" [showButtons]="showVoteButtons()" size="small"
+            (upvote)="onUpvote()" (downvote)="onDownvote()">
+        </app-voting>
+
+        <!-- Answer Content -->
+        <div class="flex-1">
+            <div class="prose max-w-none mb-4">
+                <p class="text-gray-700 whitespace-pre-wrap">{{ answer().content }}</p>
+            </div>
+
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+                <span>answered by <span class="font-medium">{{ answer().username }}</span></span>
+                <span>•</span>
+                <span>{{ formatDate(answer().createdAt) }}</span>
+            </div>
+        </div>
+    </div>
+</div>

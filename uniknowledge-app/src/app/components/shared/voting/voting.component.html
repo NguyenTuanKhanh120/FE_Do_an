@@ -1,0 +1,25 @@
+<div class="flex flex-col items-center gap-2">
+    <!-- Upvote Button -->
+    @if (showButtons()) {
+    <button (click)="onUpvote()" class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-600">
+        <svg [class]="size() === 'large' ? 'w-8 h-8' : 'w-6 h-6'" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 3l6 8H4l6-8z" />
+        </svg>
+    </button>
+    }
+
+    <!-- Vote Count -->
+    <div [class]="size() === 'large' ? 'text-2xl font-bold' : 'text-xl font-bold'"
+        [class.text-green-600]="voteCount() > 0" [class.text-red-600]="voteCount() < 0">
+        {{ voteCount() }}
+    </div>
+
+    <!-- Downvote Button -->
+    @if (showButtons()) {
+    <button (click)="onDownvote()" class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-600">
+        <svg [class]="size() === 'large' ? 'w-8 h-8' : 'w-6 h-6'" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 17l-6-8h12l-6 8z" />
+        </svg>
+    </button>
+    }
+</div>
