@@ -1,0 +1,93 @@
+<div class="bg-white rounded-lg shadow-md p-8 mb-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Avatar</h2>
+
+    <div class="flex flex-col md:flex-row gap-6 items-start">
+        <!-- Current Avatar - Click to Change -->
+        <div class="flex-shrink-0">
+            <div class="text-sm font-medium text-gray-700 mb-2">Current Avatar</div>
+
+            @if (!selectedFile()) {
+            <!-- Clickable Avatar -->
+            <div (click)="triggerFileInput()" class="relative cursor-pointer group" title="Click to change avatar">
+                @if (currentAvatarUrl()) {
+                <img [src]="currentAvatarUrl()" [alt]="username()"
+                    class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 group-hover:border-primary-500 transition-all">
+                } @else {
+                <div
+                    class="w-32 h-32 rounded-full bg-primary-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-gray-200 group-hover:border-primary-500 transition-all">
+                    {{ username().charAt(0).toUpperCase() }}
+                </div>
+                }
+
+                <!-- Overlay on Hover -->
+                <div
+                    class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full flex items-center justify-center transition-all">
+                    <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Hidden File Input -->
+            <input id="avatarFileInput" type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden" />
+
+            <p class="text-xs text-gray-500 mt-2 text-center">Click to change</p>
+            } @else {
+            <!-- Preview -->
+            <div class="relative">
+                <img [src]="previewUrl()!" alt="Preview"
+                    class="w-32 h-32 rounded-full object-cover border-4 border-primary-500">
+            </div>
+            }
+        </div>
+
+        <!-- Upload Actions -->
+        <div class="flex-grow">
+            @if (!selectedFile()) {
+            <!-- Requirements -->
+            <p class="text-sm text-gray-600">
+                <strong>Requirements:</strong> Maximum file size: 2MB. Supported formats: JPG, PNG, GIF
+            </p>
+            } @else {
+            <!-- Upload Buttons -->
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Preview your new avatar:</h3>
+                    <p class="text-sm text-gray-600">
+                        This is how your avatar will look. Click "Upload Avatar" to save it.
+                    </p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" (click)="onUpload()" [disabled]="isUploading()"
+                        class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">
+                        @if (isUploading()) {
+                        <span class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            Uploading...
+                        </span>
+                        } @else {
+                        <span>✓ Upload Avatar</span>
+                        }
+                    </button>
+
+                    <button type="button" (click)="cancelUpload()" [disabled]="isUploading()"
+                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors">
+                        ✕ Cancel
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>

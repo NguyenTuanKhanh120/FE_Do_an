@@ -1,0 +1,32 @@
+<div class="flex items-start justify-between">
+    <div class="flex items-center gap-6">
+        <!-- Avatar -->
+        <div class="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
+            @if (avatarUrl()) {
+            <img [src]="avatarUrl()" [alt]="username()" class="w-24 h-24 rounded-full object-cover">
+            } @else {
+            <span class="text-4xl font-bold text-primary-600">
+                {{ username().charAt(0).toUpperCase() }}
+            </span>
+            }
+        </div>
+
+        <!-- User Info -->
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ username() }}</h1>
+            @if (fullName()) {
+            <p class="text-lg text-gray-600">{{ fullName() }}</p>
+            }
+            <p class="text-sm text-gray-500 mt-1">{{ email() }}</p>
+            <p class="text-sm text-gray-500">Member since {{ formatDate(createdAt()) }}</p>
+        </div>
+    </div>
+
+    <!-- Edit Button -->
+    @if (showEditButton()) {
+    <a routerLink="/profile/edit"
+        class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        Edit Profile
+    </a>
+    }
+</div>

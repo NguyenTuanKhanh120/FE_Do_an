@@ -5,11 +5,13 @@ import { Router, RouterLink } from '@angular/router';
 import { UserProfileService } from '../../services/user-profile.service';
 import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../models/user-profile.model';
+import { AvatarUploadComponent } from '../shared/profile/avatar-upload/avatar-upload.component';
+import { PasswordFormComponent, PasswordChangeData } from '../shared/profile/password-form/password-form.component';
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AvatarUploadComponent, PasswordFormComponent],
   templateUrl: './edit-profile.component.html',
   styleUrls: ['./edit-profile.component.scss']
 })
@@ -92,7 +94,7 @@ export class EditProfileComponent implements OnInit {
         this.profile.set(profile);
         this.isUpdatingProfile.set(false);
         this.profileMessage.set({ type: 'success', text: 'Profile updated successfully!' });
-        
+
         const currentUser = this.authService.currentUser();
         if (currentUser) {
           const updatedUser = {
@@ -109,9 +111,9 @@ export class EditProfileComponent implements OnInit {
       },
       error: (error) => {
         this.isUpdatingProfile.set(false);
-        this.profileMessage.set({ 
-          type: 'error', 
-          text: error.error?.message || 'Failed to update profile' 
+        this.profileMessage.set({
+          type: 'error',
+          text: error.error?.message || 'Failed to update profile'
         });
         setTimeout(() => this.profileMessage.set(null), 5000);
       }
@@ -149,9 +151,9 @@ export class EditProfileComponent implements OnInit {
       },
       error: (error) => {
         this.isChangingPassword.set(false);
-        this.passwordMessage.set({ 
-          type: 'error', 
-          text: error.error?.message || 'Failed to change password' 
+        this.passwordMessage.set({
+          type: 'error',
+          text: error.error?.message || 'Failed to change password'
         });
         setTimeout(() => this.passwordMessage.set(null), 5000);
       }
@@ -170,39 +172,39 @@ export class EditProfileComponent implements OnInit {
     return this.passwordForm.get('confirmPassword');
   }
   onFileSelected(event: any): void {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    this.profileMessage.set({ type: 'error', text: 'Please select an image file' });
-    setTimeout(() => this.profileMessage.set(null), 3000);
-    return;
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      this.profileMessage.set({ type: 'error', text: 'Please select an image file' });
+      setTimeout(() => this.profileMessage.set(null), 3000);
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      this.profileMessage.set({ type: 'error', text: 'File size must not exceed 2MB' });
+      setTimeout(() => this.profileMessage.set(null), 3000);
+      return;
+    }
+
+    this.selectedFile.set(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewUrl.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   }
-  
-  // Validate file size (2MB)
-  if (file.size > 2 * 1024 * 1024) {
-    this.profileMessage.set({ type: 'error', text: 'File size must not exceed 2MB' });
-    setTimeout(() => this.profileMessage.set(null), 3000);
-    return;
-  }
-  
-  this.selectedFile.set(file);
-  
-  // Create preview
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    this.previewUrl.set(e.target?.result as string);
-  };
-  reader.readAsDataURL(file);
-}
   onUploadAvatar(): void {
     const file = this.selectedFile();
     if (!file) return;
-    
+
     this.isUploadingAvatar.set(true);
     this.profileMessage.set(null);
-    
+
     this.userProfileService.uploadAvatar(file).subscribe({
       next: (profile) => {
         this.profile.set(profile);
@@ -210,7 +212,7 @@ export class EditProfileComponent implements OnInit {
         this.selectedFile.set(null);
         this.previewUrl.set(null);
         this.profileMessage.set({ type: 'success', text: 'Avatar updated successfully!' });
-        
+
         // Update localStorage
         const currentUser = this.authService.currentUser();
         if (currentUser) {
@@ -221,27 +223,82 @@ export class EditProfileComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(updatedUser));
           this.authService.currentUser.set(updatedUser);
         }
-        
+
         setTimeout(() => this.profileMessage.set(null), 3000);
       },
       error: (error) => {
         this.isUploadingAvatar.set(false);
-        this.profileMessage.set({ 
-          type: 'error', 
-          text: error.error?.message || 'Failed to upload avatar' 
+        this.profileMessage.set({
+          type: 'error',
+          text: error.error?.message || 'Failed to upload avatar'
         });
         setTimeout(() => this.profileMessage.set(null), 5000);
       }
     });
   }
-    cancelAvatarUpload(): void {
+  cancelAvatarUpload(): void {
     this.selectedFile.set(null);
     this.previewUrl.set(null);
+  }
+  triggerFileInput(): void {
+    const fileInput = document.getElementById('avatarFileInput') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
     }
-    triggerFileInput(): void {
-  const fileInput = document.getElementById('avatarFileInput') as HTMLInputElement;
-  if (fileInput) {
-    fileInput.click();
+  }
+
+  // New handler methods for components
+  onUploadAvatarFile(file: File): void {
+    this.isUploadingAvatar.set(true);
+    this.profileMessage.set(null);
+
+    this.userProfileService.uploadAvatar(file).subscribe({
+      next: (profile) => {
+        this.profile.set(profile);
+        this.isUploadingAvatar.set(false);
+        this.profileMessage.set({ type: 'success', text: 'Avatar updated successfully!' });
+
+        const currentUser = this.authService.currentUser();
+        if (currentUser) {
+          const updatedUser = {
+            ...currentUser,
+            avatarUrl: profile.avatarUrl
+          };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          this.authService.currentUser.set(updatedUser);
+        }
+
+        setTimeout(() => this.profileMessage.set(null), 3000);
+      },
+      error: (error) => {
+        this.isUploadingAvatar.set(false);
+        this.profileMessage.set({
+          type: 'error',
+          text: error.error?.message || 'Failed to upload avatar'
+        });
+        setTimeout(() => this.profileMessage.set(null), 5000);
+      }
+    });
+  }
+
+  onPasswordChange(data: PasswordChangeData): void {
+    this.isChangingPassword.set(true);
+    this.passwordMessage.set(null);
+
+    this.userProfileService.changePassword(data).subscribe({
+      next: () => {
+        this.isChangingPassword.set(false);
+        this.passwordMessage.set({ type: 'success', text: 'Password changed successfully!' });
+        setTimeout(() => this.passwordMessage.set(null), 3000);
+      },
+      error: (error) => {
+        this.isChangingPassword.set(false);
+        this.passwordMessage.set({
+          type: 'error',
+          text: error.error?.message || 'Failed to change password'
+        });
+        setTimeout(() => this.passwordMessage.set(null), 5000);
+      }
+    });
   }
 }
-  }

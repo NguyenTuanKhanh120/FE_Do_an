@@ -8,11 +8,13 @@ import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../models/user-profile.model';
 import { Question } from '../../models/question.model';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../confirmation-dialog/confirmation-dialog.component';
+import { ProfileHeaderComponent } from '../shared/profile/profile-header/profile-header.component';
+import { ProfileStatsComponent } from '../shared/profile/profile-stats/profile-stats.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ProfileHeaderComponent, ProfileStatsComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
