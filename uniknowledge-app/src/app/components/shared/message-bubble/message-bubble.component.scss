@@ -1,0 +1,74 @@
+.message-wrapper {
+    display: flex;
+    margin-bottom: 12px;
+
+    &.my-message {
+        justify-content: flex-end;
+
+        .message {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .status-icon {
+            &.sending {
+                opacity: 0.6;
+            }
+
+            &.sent {
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            &.delivered {
+                color: rgba(255, 255, 255, 0.85);
+            }
+
+            &.read {
+                color: #4ade80;
+            }
+        }
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 10px 16px;
+        background: #f0f0f0;
+        border-radius: 18px 18px 18px 4px;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .message-content {
+        font-size: 14px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+    }
+
+    .message-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-top: 4px;
+    }
+
+    .message-time {
+        font-size: 11px;
+        color: #666;
+    }
+
+    .message-status {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .status-icon {
+        font-size: 12px;
+        margin-left: 2px;
+    }
+}

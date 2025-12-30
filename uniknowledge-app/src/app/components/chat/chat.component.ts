@@ -10,11 +10,12 @@ import { UserProfileService } from '../../services/user-profile.service';
 import { Message, Conversation, TypingIndicator, MessageStatus } from '../../models/message.model';
 import { User } from '../../models/user.model';
 import { UserProfile } from '../../models/user-profile.model';
+import { MessageBubbleComponent } from '../shared/message-bubble/message-bubble.component';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MessageBubbleComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
@@ -43,7 +44,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   searchResults = signal<UserProfile[]>([]);
   isSearching = signal<boolean>(false);
   showSearchResults = signal<boolean>(false);
-  
+
   private subscriptions = new Subscription();
   private typingTimeout?: number;
   private typingDebounceTimeout?: number;
@@ -198,7 +199,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadMoreMessages(): void {
     if (this.isLoadingMore()) return;
-    
+
     this.currentPage++;
     this.isLoadingMore.set(true);
     this.loadMessages().finally(() => {
@@ -250,7 +251,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messageService.sendMessage(receiverId, content).subscribe({
       next: (message) => {
         const currentMessages = this.messages();
-        const updatedMessages = currentMessages.map(m => 
+        const updatedMessages = currentMessages.map(m =>
           m.messageId === tempMessage.messageId ? { ...message, status: 'sent' as MessageStatus } : m
         );
         this.messages.set(updatedMessages);
@@ -302,17 +303,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   handleMessageReceived(message: Message): void {
     const currentMessages = this.messages();
-    
+
     if (message.senderId !== this.currentUser()?.userId) {
       this.playNotificationSound();
     }
-    
+
     if (this.selectedUserId() === message.senderId || this.selectedUserId() === message.receiverId) {
       if (!currentMessages.some(m => m.messageId === message.messageId)) {
         this.messages.set([...currentMessages, { ...message, status: 'delivered' as MessageStatus }]);
         this.shouldScrollToBottom = true;
       }
-      
+
       if (message.receiverId === this.currentUser()?.userId && !message.isRead) {
         this.markAsRead(message.messageId);
       }
@@ -323,7 +324,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   handleMessageSent(message: Message): void {
     const currentMessages = this.messages();
-    
+
     const updatedMessages = currentMessages.map(m => {
       if (m.status === 'sending' && m.content === message.content && m.receiverId === message.receiverId) {
         return { ...message, status: 'sent' as MessageStatus };
@@ -404,14 +405,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   async markAllAsRead(userId: number): Promise<void> {
     const currentMessages = this.messages();
     const currentUser = this.currentUser();
-    
+
     if (!currentUser) return;
 
     // Find all unread messages from this user
     const unreadMessages = currentMessages.filter(
-      msg => msg.senderId === userId && 
-             msg.receiverId === currentUser.userId && 
-             !msg.isRead
+      msg => msg.senderId === userId &&
+        msg.receiverId === currentUser.userId &&
+        !msg.isRead
     );
 
     if (unreadMessages.length === 0) return;
@@ -424,10 +425,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
     this.messages.set(updatedMessages);
 
-    const markPromises = unreadMessages.map(msg => 
-      firstValueFrom(this.messageService.markAsRead(msg.messageId)).catch(() => {})
+    const markPromises = unreadMessages.map(msg =>
+      firstValueFrom(this.messageService.markAsRead(msg.messageId)).catch(() => { })
     );
-    
+
     try {
       await Promise.all(markPromises);
       this.loadConversations();
@@ -491,12 +492,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const input = event.target as HTMLInputElement;
     const term = input.value.trim();
     this.searchTerm.set(term);
-    
+
     // Clear existing debounce timeout
     if (this.searchDebounceTimeout) {
       clearTimeout(this.searchDebounceTimeout);
     }
-    
+
     if (term.length >= 2) {
       // Debounce search - wait 300ms after user stops typing
       this.searchDebounceTimeout = window.setTimeout(() => {
@@ -541,7 +542,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   selectUserFromSearch(user: UserProfile): void {
     const existingConversation = this.conversations().find(c => c.otherUserId === user.userId);
-    
+
     if (!existingConversation) {
       const tempConversation: Conversation = {
         otherUserId: user.userId,
@@ -554,7 +555,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       };
       this.conversations.set([tempConversation, ...this.conversations()]);
     }
-    
+
     this.selectConversation(user.userId);
     this.searchTerm.set('');
     this.searchResults.set([]);

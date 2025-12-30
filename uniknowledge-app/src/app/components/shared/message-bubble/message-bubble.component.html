@@ -1,0 +1,21 @@
+<div class="message-wrapper" [class.my-message]="isMine()">
+    <div class="message">
+        <div class="message-content">{{ message().content }}</div>
+        <div class="message-footer">
+            <span class="message-time">{{ formatMessageTime(message().createdAt) }}</span>
+            @if (isMine()) {
+            <span class="message-status" [class]="'status-' + getStatus()">
+                @if (getStatus() === 'sending') {
+                <span class="status-icon sending"></span>
+                } @else if (getStatus() === 'sent') {
+                <span class="status-icon sent">✓</span>
+                } @else if (getStatus() === 'delivered') {
+                <span class="status-icon delivered">✓✓</span>
+                } @else if (getStatus() === 'read') {
+                <span class="status-icon read">✓✓</span>
+                }
+            </span>
+            }
+        </div>
+    </div>
+</div>
