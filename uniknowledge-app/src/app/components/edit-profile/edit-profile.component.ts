@@ -91,7 +91,7 @@ export class EditProfileComponent implements OnInit {
 
     this.userProfileService.updateMyProfile(changes).subscribe({
       next: (profile) => {
-        this.profile.set(profile);
+        this.profile.set(profile);  
         this.isUpdatingProfile.set(false);
         this.profileMessage.set({ type: 'success', text: 'Profile updated successfully!' });
 

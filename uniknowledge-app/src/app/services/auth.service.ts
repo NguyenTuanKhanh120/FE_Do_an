@@ -15,7 +15,7 @@ export class AuthService {
   private apiUrl = 'http://localhost:5134/api/auth';
 
   // Signals for reactive state management
-  currentUser = signal<User | null>(null);
+  currentUser = signal<User | null>(null);  
   isAuthenticated = signal<boolean>(false);
 
   constructor() {
@@ -34,6 +34,16 @@ export class AuthService {
 
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
+      tap({
+        next: (response) => {
+          this.handleAuthSuccess(response);
+        }
+      })
+    );
+  }
+
+  googleLogin(idToken: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/google-login`, { idToken }).pipe(
       tap({
         next: (response) => {
           this.handleAuthSuccess(response);

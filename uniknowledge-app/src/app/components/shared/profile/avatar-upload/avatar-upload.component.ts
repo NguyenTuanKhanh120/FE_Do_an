@@ -31,6 +31,8 @@ export class AvatarUploadComponent {
 
             // Create preview URL
             const reader = new FileReader();
+
+            // lấy API có sẵn của trình duyệt để đọc file
             reader.onload = () => {
                 this.previewUrl.set(reader.result as string);
             };
