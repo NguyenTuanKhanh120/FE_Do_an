@@ -108,11 +108,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.searchSubject.next(this.searchQuery);
   }
 
-  /** Click vào user trong dropdown → navigate đến public profile */
-  selectUser(user: UserSearchResult): void {
+  /** Xóa trắng ô tìm kiếm và ẩn dropdown kết quả */
+  closeSearchDropdown(): void {
     this.searchQuery = '';
     this.searchResults.set([]);
     this.showSearchDropdown.set(false);
+  }
+
+  /** Click vào user trong dropdown → đóng dropdown + navigate đến public profile */
+  selectUser(user: UserSearchResult): void {
+    this.closeSearchDropdown();
     this.router.navigate(['/users', user.userId]);
   }
 

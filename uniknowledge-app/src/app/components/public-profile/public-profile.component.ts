@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { UserProfileService } from '../../services/user-profile.service';
 import { AuthService } from '../../services/auth.service';
 import { PublicProfile } from '../../models/user-profile.model';
@@ -13,7 +14,7 @@ import { Question } from '../../models/question.model';
   templateUrl: './public-profile.component.html',
   styleUrls: ['./public-profile.component.scss']
 })
-export class PublicProfileComponent implements OnInit {
+export class PublicProfileComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private userProfileService = inject(UserProfileService);
@@ -27,23 +28,47 @@ export class PublicProfileComponent implements OnInit {
 
   private userId = 0;
 
+  /**
+   * Subscription lắng nghe paramMap — QUAN TRỌNG:
+   * Khi dùng snapshot, ngOnInit chỉ chạy 1 lần → đổi URL không cập nhật.
+   * Dùng paramMap.subscribe() → mỗi khi :id thay đổi, callback sẽ chạy lại.
+   */
+  private routeSub?: Subscription;
+
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.router.navigate(['/']);
-      return;
-    }
-    this.userId = +id;
+    // Lắng nghe liên tục sự thay đổi của param :id trên URL
+    this.routeSub = this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (!id) {
+        this.router.navigate(['/']);
+        return;
+      }
 
-    // Nếu là chính mình → redirect sang /profile
-    const currentUser = this.authService.currentUser();
-    if (currentUser && currentUser.userId === this.userId) {
-      this.router.navigate(['/profile']);
-      return;
-    }
+      const newUserId = +id;
 
-    this.loadProfile();
-    this.loadQuestions();
+      // Nếu là chính mình → redirect sang /profile
+      const currentUser = this.authService.currentUser();
+      if (currentUser && currentUser.userId === newUserId) {
+        this.router.navigate(['/profile']);
+        return;
+      }
+
+      // Cập nhật userId mới
+      this.userId = newUserId;
+
+      // Reset dữ liệu cũ trước khi load mới → tránh flash nội dung người cũ
+      this.profile.set(null);
+      this.questions.set([]);
+
+      // Load dữ liệu mới
+      this.loadProfile();
+      this.loadQuestions();
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Hủy subscription khi component bị destroy → tránh memory leak
+    this.routeSub?.unsubscribe();
   }
 
   loadProfile(): void {
@@ -122,3 +147,4 @@ export class PublicProfileComponent implements OnInit {
     }
   }
 }
+
