@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UserProfile, UpdateProfileRequest, ChangePasswordRequest } from '../models/user-profile.model';
+import { UserProfile, PublicProfile, UserSearchResult, UpdateProfileRequest, ChangePasswordRequest } from '../models/user-profile.model';
 import { Question } from '../models/question.model';
 
 @Injectable({
@@ -34,11 +34,12 @@ export class UserProfileService {
   getUserQuestions(userId: number): Observable<Question[]> {
     return this.http.get<Question[]>(`${this.apiUrl}/${userId}/questions`);
   }
+
   uploadAvatar(file: File): Observable<UserProfile> {
-  const formData = new FormData();
-  formData.append('file', file);
-  return this.http.post<UserProfile>(`${this.apiUrl}/me/upload-avatar`, formData);
-}
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<UserProfile>(`${this.apiUrl}/me/upload-avatar`, formData);
+  }
 
   searchUsers(searchTerm: string, limit: number = 20): Observable<UserProfile[]> {
     let params = new HttpParams().set('limit', limit.toString());
@@ -47,4 +48,24 @@ export class UserProfileService {
     }
     return this.http.get<UserProfile[]>(`${this.apiUrl}/search`, { params });
   }
-}
+
+  // --- New methods for Public Profile & Follow ---
+
+  /** Get public profile of another user (includes follower count & isFollowing flag) */
+  getPublicProfile(userId: number): Observable<PublicProfile> {
+    return this.http.get<PublicProfile>(`${this.apiUrl}/${userId}/public-profile`);
+  }
+
+  /** Toggle follow/unfollow for a user */
+  toggleFollow(userId: number): Observable<{ isFollowing: boolean }> {
+    return this.http.post<{ isFollowing: boolean }>(`${this.apiUrl}/${userId}/toggle-follow`, {});
+  }
+
+  /** Lightweight search for navbar autocomplete (no auth required) */
+  searchUsersLight(keyword: string, limit: number = 10): Observable<UserSearchResult[]> {
+    const params = new HttpParams()
+      .set('keyword', keyword.trim())
+      .set('limit', limit.toString());
+    return this.http.get<UserSearchResult[]>(`${this.apiUrl}/search-light`, { params });
+  }
+}

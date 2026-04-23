@@ -78,6 +78,10 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard]
   },
   {
+    path: 'users/:id',
+    loadComponent: () => import('./components/public-profile/public-profile.component').then(m => m.PublicProfileComponent)
+  },
+  {
     path: 'not-found',
     loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent)
   },
