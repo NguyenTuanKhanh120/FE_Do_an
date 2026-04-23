@@ -11,4 +11,7 @@ import { CommonModule } from '@angular/common';
 export class ProfileStatsComponent {
     questionCount = input.required<number>();
     answerCount = input.required<number>();
+    // Số follower/following — optional, mặc định null (không hiển thị nếu không truyền)
+    followerCount = input<number | null>(null);
+    followingCount = input<number | null>(null);
 }

@@ -15,7 +15,11 @@
       </app-profile-header>
 
       <!-- Stats - Using ProfileStatsComponent -->
-      <app-profile-stats [questionCount]="profile()!.questionCount" [answerCount]="profile()!.answerCount">
+      <app-profile-stats
+        [questionCount]="profile()!.questionCount"
+        [answerCount]="profile()!.answerCount"
+        [followerCount]="followerCount()"
+        [followingCount]="followingCount()">
       </app-profile-stats>
     </div>
 

@@ -29,6 +29,9 @@ export class ProfileComponent implements OnInit {
   questions = signal<Question[]>([]);
   isLoading = signal<boolean>(false);
   isLoadingQuestions = signal<boolean>(false);
+  // Số follower/following — lấy từ public-profile API
+  followerCount = signal<number>(0);
+  followingCount = signal<number>(0);
 
   ngOnInit(): void {
     this.loadProfile();
@@ -41,10 +44,23 @@ export class ProfileComponent implements OnInit {
       next: (profile) => {
         this.profile.set(profile);
         this.isLoading.set(false);
+        // Sau khi có userId, gọi tiếp API lấy follower/following count
+        this.loadFollowCounts(profile.userId);
       },
       error: () => {
         this.isLoading.set(false);
       }
+    });
+  }
+
+  /** Gọi public-profile API để lấy số follower/following */
+  loadFollowCounts(userId: number): void {
+    this.userProfileService.getPublicProfile(userId).subscribe({
+      next: (pub) => {
+        this.followerCount.set(pub.followerCount);
+        this.followingCount.set(pub.followingCount);
+      },
+      error: () => { /* silent fail */ }
     });
   }
 

@@ -25,19 +25,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
 
-  isMenuOpen = false;
+  // ===== State: Hamburger Sidebar =====
+  // Điều khiển Sidebar trượt từ bên trái
+  isSidebarOpen = false;
+
   unreadCount = signal<number>(0);
 
-  // --- Search state ---
+  // ===== State: Ô tìm kiếm (giữ nguyên logic cũ) =====
   searchQuery = '';
   searchResults = signal<UserSearchResult[]>([]);
   isSearching = signal<boolean>(false);
   showSearchDropdown = signal<boolean>(false);
 
   /**
-   * RxJS Subject: mỗi lần user gõ phím → emit giá trị mới vào stream.
-   * Pipeline: debounceTime(300ms) → distinctUntilChanged → switchMap(gọi API)
-   * switchMap tự cancel request cũ nếu user gõ tiếp trước khi API trả về.
+   * RxJS Search Pipeline:
+   * Subject → debounceTime(300ms) → distinctUntilChanged → switchMap(API call)
+   * switchMap tự hủy request cũ khi user tiếp tục gõ → tránh race condition
    */
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
@@ -47,21 +50,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (this.authService.isAuthenticated()) {
       this.loadUnreadCount();
 
-      this.signalRService.messageReceived$.subscribe(() => {
-        this.loadUnreadCount();
-      });
-      this.signalRService.messageSent$.subscribe(() => {
-        this.loadUnreadCount();
-      });
-      this.signalRService.messageRead$.subscribe(() => {
-        this.loadUnreadCount();
-      });
+      // Lắng nghe sự kiện tin nhắn qua SignalR để cập nhật badge
+      this.signalRService.messageReceived$.subscribe(() => this.loadUnreadCount());
+      this.signalRService.messageSent$.subscribe(() => this.loadUnreadCount());
+      this.signalRService.messageRead$.subscribe(() => this.loadUnreadCount());
     }
 
-    // Setup search pipeline
+    // Khởi tạo pipeline tìm kiếm RxJS
     this.searchSubscription = this.searchSubject.pipe(
-      debounceTime(300),              // Chờ 300ms sau khi user ngừng gõ
-      distinctUntilChanged(),         // Chỉ emit nếu giá trị thực sự thay đổi
+      debounceTime(300),
+      distinctUntilChanged(),
       tap(query => {
         if (!query.trim()) {
           this.searchResults.set([]);
@@ -73,7 +71,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }),
       switchMap(query => {
         if (!query.trim()) return [];
-        // switchMap: cancel HTTP request trước nếu user gõ tiếp
         return this.userProfileService.searchUsersLight(query, 10);
       })
     ).subscribe({
@@ -82,9 +79,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.showSearchDropdown.set(results.length > 0);
         this.isSearching.set(false);
       },
-      error: () => {
-        this.isSearching.set(false);
-      }
+      error: () => this.isSearching.set(false)
     });
   }
 
@@ -93,6 +88,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.messageSubscription?.unsubscribe();
     this.searchSubject.complete();
   }
+
+  // ===== Hamburger Sidebar =====
+
+  /** Mở/đóng sidebar */
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  /** Đóng sidebar (gọi khi click vào link hoặc overlay) */
+  closeSidebar(): void {
+    this.isSidebarOpen = false;
+  }
+
+  // ===== Search =====
 
   /** Khi user gõ trong ô search → đẩy giá trị vào Subject */
   onSearchInput(): void {
@@ -107,7 +116,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/users', user.userId]);
   }
 
-  /** Click bên ngoài ô search → đóng dropdown */
+  /**
+   * Click outside handler:
+   * - Đóng search dropdown nếu click ngoài navbar
+   * (Sidebar có overlay riêng → không cần xử lý ở đây)
+   */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
@@ -115,27 +128,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ===== Utilities =====
+
   loadUnreadCount(): void {
     this.messageService.getUnreadCount().subscribe({
-      next: (response) => {
-        this.unreadCount.set(response.unreadCount);
-      },
-      error: (error) => {
-        console.error('Error loading unread count:', error);
-      }
+      next: (response) => this.unreadCount.set(response.unreadCount),
+      error: (error) => console.error('Error loading unread count:', error)
     });
   }
 
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
-
   logout(): void {
+    this.closeSidebar();
     this.authService.logout();
   }
 
   isAdmin(): boolean {
-    const user = this.authService.currentUser();
-    return user?.role === 'Admin';
+    return this.authService.currentUser()?.role === 'Admin';
   }
 }

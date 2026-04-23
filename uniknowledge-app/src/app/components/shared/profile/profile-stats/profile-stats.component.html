@@ -1,4 +1,4 @@
-<div class="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-gray-200">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-gray-200">
     <div class="text-center">
         <div class="text-3xl font-bold text-primary-600">{{ questionCount() }}</div>
         <div class="text-sm text-gray-600">Questions</div>
@@ -7,8 +7,16 @@
         <div class="text-3xl font-bold text-green-600">{{ answerCount() }}</div>
         <div class="text-sm text-gray-600">Answers</div>
     </div>
-    <div class="text-center">
-        <div class="text-3xl font-bold text-blue-600">{{ questionCount() + answerCount() }}</div>
-        <div class="text-sm text-gray-600">Total Posts</div>
-    </div>
-</div>
+    @if (followerCount() !== null) {
+        <div class="text-center">
+            <div class="text-3xl font-bold text-blue-600">{{ followerCount() }}</div>
+            <div class="text-sm text-gray-600">Followers</div>
+        </div>
+    }
+    @if (followingCount() !== null) {
+        <div class="text-center">
+            <div class="text-3xl font-bold text-purple-600">{{ followingCount() }}</div>
+            <div class="text-sm text-gray-600">Following</div>
+        </div>
+    }
+</div>
