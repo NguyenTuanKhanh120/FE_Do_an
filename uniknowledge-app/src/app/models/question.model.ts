@@ -22,6 +22,18 @@ export interface Question {
   answerCount: number;
   voteCount: number;
   hasAcceptedAnswer: boolean;
+  // Share
+  originalQuestionId?: number;
+  originalQuestion?: OriginalQuestion;
+}
+
+export interface OriginalQuestion {
+  questionId: number;
+  title: string;
+  contentPreview: string;
+  userId: number;
+  username: string;
+  avatarUrl?: string;
 }
 
 export interface CreateQuestionRequest {

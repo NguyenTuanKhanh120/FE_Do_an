@@ -1,7 +1,149 @@
 <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6">
-    <div class="flex gap-4">
-        <app-question-stats [question]="question()"></app-question-stats>
-        <app-question-content [question]="question()" (tagClick)="onTagClick($event)">
-        </app-question-content>
+
+  <!-- ===== TRẠNG THÁI 2: Bài Share — có originalQuestion ===== -->
+  @if (question().originalQuestion) {
+    <!-- Header: Người chia sẻ -->
+    <div class="flex items-center gap-2 mb-3">
+      <a [routerLink]="['/users', question().userId]" class="flex-shrink-0">
+        @if (question().avatarUrl) {
+          <img [src]="question().avatarUrl" [alt]="question().username" class="w-8 h-8 rounded-full object-cover border border-gray-200"/>
+        } @else {
+          <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-xs">
+            {{ question().username.charAt(0).toUpperCase() }}
+          </div>
+        }
+      </a>
+      <div class="text-sm">
+        <a [routerLink]="['/users', question().userId]" class="font-semibold text-gray-900 hover:text-primary-600">{{ question().username }}</a>
+        <span class="text-gray-500"> shared a post</span>
+      </div>
     </div>
+
+    <!-- Lời bình của người share (nếu có) -->
+    @if (question().content) {
+      <p class="text-gray-700 mb-3">{{ question().content }}</p>
+    }
+
+    <!-- Khung trích dẫn bài gốc (Quote Box) -->
+    <a [routerLink]="['/questions', question().originalQuestion!.questionId]"
+       class="block border border-gray-200 rounded-xl p-4 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer">
+      <!-- Tác giả gốc -->
+      <div class="flex items-center gap-2 mb-2">
+        @if (question().originalQuestion!.avatarUrl) {
+          <img [src]="question().originalQuestion!.avatarUrl" class="w-6 h-6 rounded-full object-cover"/>
+        } @else {
+          <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-[10px]">
+            {{ question().originalQuestion!.username.charAt(0).toUpperCase() }}
+          </div>
+        }
+        <span class="text-xs font-medium text-gray-700">{{ question().originalQuestion!.username }}</span>
+      </div>
+      <!-- Tiêu đề bài gốc -->
+      <h3 class="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{{ question().originalQuestion!.title }}</h3>
+      <!-- Nội dung tóm tắt -->
+      <p class="text-xs text-gray-500 line-clamp-2">{{ question().originalQuestion!.contentPreview }}</p>
+    </a>
+  } @else {
+    <!-- ===== TRẠNG THÁI 1: Bài đăng thường ===== -->
+    <!-- Header: Avatar + Username -->
+    <div class="flex items-center gap-2 mb-3">
+      <a [routerLink]="['/users', question().userId]" class="flex-shrink-0">
+        @if (question().avatarUrl) {
+          <img [src]="question().avatarUrl" [alt]="question().username" class="w-8 h-8 rounded-full object-cover border border-gray-200"/>
+        } @else {
+          <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-xs">
+            {{ question().username.charAt(0).toUpperCase() }}
+          </div>
+        }
+      </a>
+      <div class="text-sm">
+        <a [routerLink]="['/users', question().userId]" class="font-semibold text-gray-900 hover:text-primary-600">{{ question().username }}</a>
+        <span class="text-gray-500"> asked a question</span>
+      </div>
+    </div>
+    <div class="flex gap-4">
+      <app-question-stats [question]="question()"></app-question-stats>
+      <app-question-content [question]="question()" (tagClick)="onTagClick($event)"></app-question-content>
+    </div>
+  }
+
+  <!-- ===== Thanh Action: Vote count + Answers + Share ===== -->
+  <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+    <div class="flex items-center gap-4 text-xs text-gray-500">
+      <!-- Votes + Views chỉ hiện cho bài thường -->
+      @if (!question().originalQuestion) {
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+          </svg>
+          {{ question().voteCount }} votes
+        </span>
+      }
+      <!-- Answers: luôn hiện — link đến trang detail để bình luận -->
+      <a [routerLink]="['/questions', question().questionId]" class="flex items-center gap-1 hover:text-primary-600 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+        </svg>
+        {{ question().answerCount }} answers
+      </a>
+      @if (!question().originalQuestion) {
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          {{ question().viewCount }} views
+        </span>
+      }
+    </div>
+
+    <!-- Nút Share -->
+    <button (click)="openShareModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+      </svg>
+      Share
+    </button>
+  </div>
 </div>
+
+<!-- ===== Share Modal ===== -->
+@if (showShareModal()) {
+  <div (click)="closeShareModal()" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div (click)="$event.stopPropagation()" class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
+      <h3 class="text-lg font-bold text-gray-900 mb-1">Share this question</h3>
+      <p class="text-sm text-gray-500 mb-4">Add your thoughts (optional)</p>
+
+      <textarea
+        [(ngModel)]="shareContent"
+        rows="3"
+        placeholder="What do you think about this question?"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none mb-3"
+      ></textarea>
+
+      <!-- Preview bài sẽ share -->
+      <div class="border border-gray-200 rounded-lg p-3 bg-gray-50 mb-4">
+        <p class="text-xs text-gray-400 mb-1">Sharing:</p>
+        <p class="text-sm font-medium text-gray-800 line-clamp-2">
+          {{ question().originalQuestion ? question().originalQuestion!.title : question().title }}
+        </p>
+        <p class="text-xs text-gray-500 mt-0.5">
+          by {{ question().originalQuestion ? question().originalQuestion!.username : question().username }}
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button (click)="closeShareModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button (click)="confirmShare()" [disabled]="isSharing()" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors">
+          @if (isSharing()) {
+            Sharing...
+          } @else {
+            Share
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

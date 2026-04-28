@@ -45,5 +45,11 @@ export class QuestionService {
   deleteQuestion(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { observe: 'body' });
   }
+
+  /** Chia sẻ câu hỏi — tạo bài share với lời bình tùy chọn */
+  shareQuestion(questionId: number, content?: string): Observable<Question> {
+    return this.http.post<Question>(`${this.apiUrl}/${questionId}/share`, { content });
+  }
 }
+
 
